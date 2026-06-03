@@ -1,4 +1,4 @@
-import { embed, getEmbeddingModelId } from "./embeddings";
+import { embed, embedBatchDirect, getEmbeddingModelId } from "./embeddings";
 import { computeEmotionalImportanceBoost } from "./emotional";
 import { classifyFactRelationship, type ExtractedFact } from "./extractor";
 import { computeInitialHalfLife } from "./forgetting";
@@ -166,6 +166,423 @@ export async function addFact(
     .single();
 
   return { action: "inserted", factId: inserted?.id };
+}
+
+/**
+ * Safe batch embedding wrapper with chunked fallback.
+ * Attempts to embed everything in a single Voyage AI API call.
+ * If that fails, it falls back to smaller chunks of 5, and finally individual calls.
+ */
+async function embedFactsBatchSafe(texts: string[]): Promise<number[][]> {
+  if (texts.length === 0) return [];
+
+  try {
+    return await embedBatchDirect(texts);
+  } catch (error) {
+    console.warn("[memory] embedBatchDirect failed, falling back to chunked embedding:", error);
+    const CHUNK_SIZE = 5;
+    const results: number[][] = [];
+    for (let i = 0; i < texts.length; i += CHUNK_SIZE) {
+      const chunk = texts.slice(i, i + CHUNK_SIZE);
+      try {
+        if (i > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        const chunkEmbeddings = await embedBatchDirect(chunk);
+        results.push(...chunkEmbeddings);
+      } catch (chunkErr) {
+        console.warn(`[memory] chunk embedding failed for chunk starting at ${i}, trying individually:`, chunkErr);
+        for (const text of chunk) {
+          const single = await embed(text);
+          results.push(single);
+        }
+      }
+    }
+    return results;
+  }
+}
+
+/**
+ * Safely parses vector representation from Database (handles both array and string representation).
+ */
+function parseEmbedding(val: any): number[] {
+  if (Array.isArray(val)) {
+    return val;
+  }
+  if (typeof val === "string") {
+    try {
+      const cleaned = val.replace(/[\[\]]/g, "").trim();
+      if (!cleaned) return [];
+      return cleaned.split(",").map((num) => parseFloat(num.trim()));
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+/**
+ * Calculates cosine similarity between two vectors.
+ */
+function cosineSimilarity(vecA: number[], vecB: number[]): number {
+  if (vecA.length !== vecB.length || vecA.length === 0) return 0;
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    const a = vecA[i]!;
+    const b = vecB[i]!;
+    dotProduct += a * b;
+    normA += a * a;
+    normB += b * b;
+  }
+  if (normA === 0 || normB === 0) return 0;
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+/**
+ * Add a batch of facts to memory with in-memory deduplication and contradiction resolution.
+ * Extremely optimized to prevent Vercel timeouts (60s).
+ */
+export async function addFactsBatch(
+  userId: string,
+  extractedFacts: ExtractedFact[],
+  source: string,
+  sourceId?: string,
+): Promise<{ addedCount: number; actionCounts: { inserted: number; updated: number; skipped: number } }> {
+  const db = createAdminClient();
+
+  // 1. In-memory duplicate removal within the input batch itself
+  const uniqueExtractedFacts: ExtractedFact[] = [];
+  const seenFacts = new Set<string>();
+  for (const ef of extractedFacts) {
+    const norm = ef.fact.trim().toLowerCase();
+    if (!seenFacts.has(norm)) {
+      seenFacts.add(norm);
+      uniqueExtractedFacts.push(ef);
+    }
+  }
+
+  const duplicatesInBatch = extractedFacts.length - uniqueExtractedFacts.length;
+
+  if (uniqueExtractedFacts.length === 0) {
+    return {
+      addedCount: 0,
+      actionCounts: { inserted: 0, updated: 0, skipped: duplicatesInBatch },
+    };
+  }
+
+  // 2. Fetch all existing active facts for this user in 1 call
+  let existingFacts: any[] = [];
+  try {
+    const { data, error } = await db.database.from("memory_facts")
+      .select("id, fact, embedding, confidence")
+      .eq("user_id", userId)
+      .eq("is_latest", true);
+
+    if (error) {
+      console.warn("[memory] Failed to fetch existing facts for batch similarity, proceeding with empty array:", error.message);
+    } else {
+      existingFacts = data ?? [];
+    }
+  } catch (err) {
+    console.warn("[memory] Failed to fetch existing facts for batch similarity, proceeding with empty array:", err);
+  }
+
+  // 3. Batch embed the new unique facts in 1 call (with chunked fallback)
+  const texts = uniqueExtractedFacts.map((f) => f.fact);
+  const embeddings = await embedFactsBatchSafe(texts);
+
+  if (embeddings.length !== uniqueExtractedFacts.length) {
+    throw new Error(`Embedding count mismatch: expected ${uniqueExtractedFacts.length}, got ${embeddings.length}`);
+  }
+
+  // 4. In-memory similarity matching
+  const similarityMatches: {
+    newFactIndex: number;
+    topMatch: any;
+    similarity: number;
+  }[] = [];
+
+  for (let i = 0; i < uniqueExtractedFacts.length; i++) {
+    const newEmbed = embeddings[i]!;
+    let topMatch: any = null;
+    let topSimilarity = -1;
+
+    for (const existing of existingFacts) {
+      const existingEmbed = parseEmbedding(existing.embedding);
+      if (existingEmbed.length === 0) continue;
+
+      const sim = cosineSimilarity(newEmbed, existingEmbed);
+      if (sim > topSimilarity) {
+        topSimilarity = sim;
+        topMatch = existing;
+      }
+    }
+
+    if (topMatch && topSimilarity >= UPDATE_CANDIDATE_THRESHOLD) {
+      similarityMatches.push({
+        newFactIndex: i,
+        topMatch,
+        similarity: topSimilarity,
+      });
+    }
+  }
+
+  // Categorize facts
+  interface ClassificationTask {
+    newFactIndex: number;
+    newFact: ExtractedFact;
+    topMatch: any;
+  }
+
+  const classificationTasks: ClassificationTask[] = [];
+  const directInsertIndexes: number[] = [];
+  let skippedCount = duplicatesInBatch;
+
+  for (let i = 0; i < uniqueExtractedFacts.length; i++) {
+    const match = similarityMatches.find((m) => m.newFactIndex === i);
+    if (!match) {
+      directInsertIndexes.push(i);
+    } else if (match.similarity >= DUPLICATE_THRESHOLD) {
+      skippedCount++;
+    } else {
+      classificationTasks.push({
+        newFactIndex: i,
+        newFact: uniqueExtractedFacts[i]!,
+        topMatch: match.topMatch,
+      });
+    }
+  }
+
+  // 5. Run LLM classifications in parallel for candidate overlaps
+  const updateTasks: {
+    newFactIndex: number;
+    newFact: ExtractedFact;
+    oldFactId: string;
+    oldConfidence: number;
+  }[] = [];
+
+  if (classificationTasks.length > 0) {
+    const classificationResults = await Promise.allSettled(
+      classificationTasks.map(async (task) => {
+        const relationship = await classifyFactRelationship(
+          task.newFact.fact,
+          task.topMatch.fact,
+          task.newFact.eventTime,
+        );
+        return { task, relationship };
+      })
+    );
+
+    for (let idx = 0; idx < classificationResults.length; idx++) {
+      const res = classificationResults[idx]!;
+      const task = classificationTasks[idx]!;
+      if (res.status === "fulfilled") {
+        const { relationship } = res.value;
+        if (relationship === "duplicate") {
+          skippedCount++;
+        } else if (relationship === "update") {
+          updateTasks.push({
+            newFactIndex: task.newFactIndex,
+            newFact: task.newFact,
+            oldFactId: task.topMatch.id,
+            oldConfidence: task.topMatch.confidence ?? 0,
+          });
+        } else {
+          directInsertIndexes.push(task.newFactIndex);
+        }
+      } else {
+        console.warn(`[memory] Relationship classification failed for: ${task.newFact.fact}. Defaulting to insert as new.`, res.reason);
+        directInsertIndexes.push(task.newFactIndex);
+      }
+    }
+  }
+
+  // 6. Prepare list of facts to insert
+  const factsToInsert: {
+    index: number;
+    record: any;
+    updateInfo?: {
+      oldFactId: string;
+      shouldSupersede: boolean;
+    };
+  }[] = [];
+
+  for (const idx of directInsertIndexes) {
+    const extracted = uniqueExtractedFacts[idx]!;
+    const factEmbedding = embeddings[idx]!;
+
+    const emotionalIntensity = extracted.emotionalIntensity ?? 0;
+    const importanceBoost = computeEmotionalImportanceBoost(emotionalIntensity);
+    const halfLife = computeInitialHalfLife(
+      extracted.category, extracted.memoryType, extracted.importance, emotionalIntensity,
+    );
+
+    factsToInsert.push({
+      index: idx,
+      record: {
+        user_id: userId,
+        category: extracted.category,
+        fact: extracted.fact,
+        source,
+        source_id: sourceId ?? null,
+        memory_type: extracted.memoryType,
+        confidence: extracted.confidence,
+        importance: Math.min(1.0, extracted.importance + importanceBoost),
+        embedding: factEmbedding,
+        embedding_model: getEmbeddingModelId(),
+        is_latest: true,
+        event_time: extracted.eventTime ?? null,
+        valid_until: extracted.validUntil ?? null,
+        half_life_days: halfLife,
+        emotional_valence: extracted.emotionalValence ?? null,
+        emotional_intensity: emotionalIntensity,
+      },
+    });
+  }
+
+  for (const ut of updateTasks) {
+    const extracted = ut.newFact;
+    const factEmbedding = embeddings[ut.newFactIndex]!;
+
+    const emotionalIntensity = extracted.emotionalIntensity ?? 0;
+    const importanceBoost = computeEmotionalImportanceBoost(emotionalIntensity);
+    const halfLife = computeInitialHalfLife(
+      extracted.category, extracted.memoryType, extracted.importance, emotionalIntensity,
+    );
+
+    const shouldSupersede = extracted.confidence >= ut.oldConfidence - 0.15;
+
+    factsToInsert.push({
+      index: ut.newFactIndex,
+      record: {
+        user_id: userId,
+        category: extracted.category,
+        fact: extracted.fact,
+        source,
+        source_id: sourceId ?? null,
+        memory_type: extracted.memoryType,
+        confidence: extracted.confidence,
+        importance: Math.min(1.0, extracted.importance + importanceBoost),
+        embedding: factEmbedding,
+        embedding_model: getEmbeddingModelId(),
+        is_latest: true,
+        event_time: extracted.eventTime ?? null,
+        valid_until: extracted.validUntil ?? null,
+        half_life_days: halfLife,
+        emotional_valence: extracted.emotionalValence ?? null,
+        emotional_intensity: emotionalIntensity,
+      },
+      updateInfo: {
+        oldFactId: ut.oldFactId,
+        shouldSupersede,
+      },
+    });
+  }
+
+  // 7. Write to database (with robust single-insert fallback)
+  let insertedRows: any[] = [];
+  let insertedCount = 0;
+  let updatedCount = 0;
+
+  if (factsToInsert.length > 0) {
+    const recordsToInsert = factsToInsert.map((x) => x.record);
+    try {
+      const { data, error } = await db.database.from("memory_facts")
+        .insert(recordsToInsert)
+        .select("id, fact");
+
+      if (error) {
+        throw error;
+      }
+      insertedRows = data ?? [];
+      insertedCount = insertedRows.length;
+    } catch (bulkErr) {
+      console.warn("[memory] Bulk database insert failed, falling back to individual inserts:", bulkErr);
+      // Fallback: Individual inserts
+      for (const item of factsToInsert) {
+        try {
+          const { data: singleData, error: singleError } = await db.database.from("memory_facts")
+            .insert(item.record)
+            .select("id, fact")
+            .single();
+
+          if (singleError) throw singleError;
+          if (singleData) {
+            insertedRows.push(singleData);
+            insertedCount++;
+
+            if (item.updateInfo?.shouldSupersede) {
+              const { error: updErr } = await db.database.from("memory_facts")
+                .update({
+                  is_latest: false,
+                  superseded_by: singleData.id,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", item.updateInfo.oldFactId);
+              
+              if (!updErr) {
+                updatedCount++;
+              } else {
+                console.error("[memory] Failed to update superseded fact in individual fallback:", updErr.message);
+              }
+            }
+          }
+        } catch (indErr) {
+          console.error(`[memory] Individual insert failed for fact "${item.record.fact}":`, indErr);
+        }
+      }
+    }
+
+    // If bulk insert succeeded, apply updates
+    if (insertedRows.length === recordsToInsert.length && bulkUpdateNeeded(factsToInsert)) {
+      const updatePromises: Promise<void>[] = [];
+      for (const item of factsToInsert) {
+        const insertedRow = insertedRows.find((r) => r.fact === item.record.fact);
+        if (insertedRow && item.updateInfo?.shouldSupersede) {
+          const oldFactId = item.updateInfo.oldFactId;
+          updatePromises.push(
+            (async () => {
+              try {
+                const { error } = await db.database.from("memory_facts")
+                  .update({
+                    is_latest: false,
+                    superseded_by: insertedRow.id,
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", oldFactId);
+                if (!error) {
+                  updatedCount++;
+                } else {
+                  console.error("[memory] Failed to update superseded fact:", error.message);
+                }
+              } catch (err) {
+                console.error("[memory] Exception updating superseded fact:", err);
+              }
+            })()
+          );
+        }
+      }
+
+      if (updatePromises.length > 0) {
+        await Promise.allSettled(updatePromises);
+      }
+    }
+  }
+
+  return {
+    addedCount: insertedCount,
+    actionCounts: {
+      inserted: insertedCount - updatedCount,
+      updated: updatedCount,
+      skipped: skippedCount,
+    },
+  };
+}
+
+function bulkUpdateNeeded(items: any[]): boolean {
+  return items.some((item) => item.updateInfo?.shouldSupersede);
 }
 
 /**

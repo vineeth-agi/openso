@@ -15,7 +15,7 @@ import { z } from "zod";
 
 import { google } from "@/lib/ai/google-provider";
 import { createAdminClient } from "@/lib/insforge/admin";
-import { addFact } from "@/lib/memory/store";
+import { addFactsBatch } from "@/lib/memory/store";
 
 // ── Schema ──────────────────────────────────────────────────
 
@@ -198,41 +198,23 @@ export async function ingestResume(
     push("professional", `Certified: ${cert.name}${cert.issuer ? ` by ${cert.issuer}` : ""}`, 0.7);
   }
 
-  // Process facts in parallel batches of 6 — the embedding rate limiter handles
-  // backoff if we burst too fast. This replaces the previous serial loop with
-  // a 1.5s sleep per fact (which made 30+ facts blow past Vercel's 60s limit).
+  // Ingest facts in a single optimized batch
   let factsAdded = 0;
-  const BATCH_SIZE = 6;
-  for (let i = 0; i < facts.length; i += BATCH_SIZE) {
-    const batch = facts.slice(i, i + BATCH_SIZE);
-    const results = await Promise.allSettled(
-      batch.map((f) =>
-        addFact(
-          userId,
-          {
-            category: f.category,
-            fact: f.fact,
-            confidence: 0.95,
-            importance: f.importance,
-            memoryType: "fact",
-          },
-          "resume",
-        ),
-      ),
+  try {
+    const batchResult = await addFactsBatch(
+      userId,
+      facts.map((f) => ({
+        category: f.category,
+        fact: f.fact,
+        confidence: 0.95,
+        importance: f.importance,
+        memoryType: "fact" as const,
+      })),
+      "resume",
     );
-    for (let j = 0; j < results.length; j++) {
-      const r = results[j];
-      if (r.status === "fulfilled") {
-        if (r.value.action !== "skipped") factsAdded++;
-      } else {
-        const f = batch[j];
-        console.warn(
-          "[ingest-resume] Failed to add fact (continuing):",
-          f.fact.slice(0, 60),
-          r.reason instanceof Error ? r.reason.message : r.reason,
-        );
-      }
-    }
+    factsAdded = batchResult.addedCount;
+  } catch (err) {
+    console.error("[ingest-resume] Failed to batch ingest facts:", err);
   }
 
   // ── Save to user_profiles ───────────────────────────────
