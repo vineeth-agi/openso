@@ -121,25 +121,6 @@ export default async function OpenGraphImage(): Promise<ImageResponse> {
             marginTop: 8,
           }}
         >
-          {/* Hero pill */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              padding: "8px 18px",
-              borderRadius: 999,
-              border: "1px solid rgba(255,255,255,0.14)",
-              backgroundColor: "rgba(255,255,255,0.04)",
-              fontSize: 18,
-              color: "rgba(255,255,255,0.85)",
-              marginBottom: 36,
-            }}
-          >
-            <span style={{ fontSize: 16 }}>🚀</span>
-            <span>AI-Powered Open Source Platform</span>
-          </div>
-
           {/* H1 — verbatim from src/components/marketing/hero-1.tsx */}
           <div
             style={{

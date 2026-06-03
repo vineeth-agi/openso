@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ArrowRight, Phone, Rocket } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { LogoCloud } from "@/components/ui/logo-cloud";
@@ -31,24 +31,6 @@ export function HeroSection() {
 							src="/sponsors/insforge-logo.svg"
 							alt="InsForge"
 							className="h-4 w-auto opacity-80 group-hover:opacity-100 transition-all duration-300"
-						/>
-					</a>
-
-					<a
-						className={cn(
-							"group flex w-fit items-center gap-3 rounded-full border bg-card px-3.5 py-1.5 shadow",
-							"fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards transition-all delay-100 duration-500 ease-out"
-						)}
-						href="#link"
-					>
-						<Rocket
-							className="size-3 text-muted-foreground"
-						/>
-						<span className="text-xs">AI-Powered Open Source Platform</span>
-						<span className="block h-5 border-l" />
-
-						<ArrowRight
-							className="size-3 duration-150 ease-out group-hover:translate-x-1"
 						/>
 					</a>
 				</div>
