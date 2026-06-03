@@ -1,0 +1,29 @@
+# Vercel deploy ignores — keep migration artefacts and dev tooling
+# out of the production bundle. These files exist only on the operator's
+# laptop during the Supabase → InsForge migration and have no business
+# being shipped to a serverless runtime.
+
+# Migration runner working artefacts (data dumps can hit 100+ MB).
+.kiro/specs/**/work/
+.kiro/specs/**/probe-inventory.json
+.kiro/specs/**/run.json
+
+# Spec documents — informational only, not consumed by the app.
+.kiro/
+
+# Migration baseline SQL files — applied to InsForge on the operator's
+# machine, not needed in the deploy bundle.
+migrations/
+
+# Local PostgreSQL/Supabase tooling and dumps. Anchor with a leading
+# slash so this matches ONLY the workspace-root `supabase/` directory
+# (the local CLI dev folder), NOT `src/lib/supabase/` (the SDK
+# wrappers — required for the build).
+/supabase/
+
+# Migration credentials env file (gitignored anyway, but be defensive).
+.env.migration
+.env.migration.template
+
+# Migration runner source — runs only on the operator's laptop.
+scripts/migration/

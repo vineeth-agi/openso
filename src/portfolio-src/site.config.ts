@@ -1,0 +1,331 @@
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ *  SITE CONFIG — single source of truth
+ * ────────────────────────────────────────────────────────────────────────────
+ *  Edit this file to make the portfolio your own. Every identity, link,
+ *  SEO string, nav entry, and content list is read from here.
+ *
+ *  After cloning:
+ *    1. Update `identity`, `contact`, `assets`, and `socials` below.
+ *    2. Edit `seo` defaults and `nav` items.
+ *    3. Replace `experiences`, `projects`, `hackathons`, `research`.
+ *
+ *  Runtime-only values (API keys, etc.) still live in `.env.local`.
+ * ────────────────────────────────────────────────────────────────────────────
+ */
+
+export type SocialPlatform =
+  | "twitter"
+  | "github"
+  | "linkedin"
+  | "leetcode"
+  | "tryhackme"
+  | "codeforces";
+
+export const siteConfig = {
+  // ── Identity ──────────────────────────────────────────────────────────────
+  identity: {
+    name: "Vineeth Kumar",
+    firstName: "Vineeth",
+    title: "Full-Stack Developer",
+    tagline: "MS CS @ NYU",
+    bio: "Full stack web developer building scalable, user-centric applications with expertise in cloud infrastructure and microservices architecture.",
+    intros: [
+      "Software Engineer",
+      "Full-Stack Developer",
+      "Problem Solver",
+      "Tech Geek",
+    ],
+  },
+
+  // ── Contact & URL ─────────────────────────────────────────────────────────
+  contact: {
+    email: "vineeth@openso.dev",
+    url: "https://openso.dev",
+    calUrl: "https://cal.com/vineeth-agi",
+    resumeUrl: "/resume.pdf",
+  },
+
+  // ── Assets (Unified site-chrome assets in public folder) ──────────────────
+  assetsUrl: "",
+  assets: {
+    ogImage: "/og-image.jpg",
+    blogOgImage: "/og-image.jpg",
+    favicon: "/openso_logo.png",
+  },
+
+  // ── Socials (platform → username + url) ───────────────────────────────────
+  //  Adding/removing entries here updates the hero social buttons automatically.
+  socials: {
+    twitter: {
+      label: "Twitter",
+      username: "zerolatency_",
+      url: "https://x.com/zerolatency_",
+    },
+    github: {
+      label: "Github",
+      username: "vineeth-agi",
+      url: "https://github.com/vineeth-agi",
+    },
+    linkedin: {
+      label: "LinkedIn",
+      username: "vineeth-agi",
+      url: "https://www.linkedin.com/in/vineeth-agi/",
+    },
+    leetcode: {
+      label: "LeetCode",
+      username: "vineeth-agi",
+      url: "https://leetcode.com/u/vineeth-agi",
+    },
+    tryhackme: {
+      label: "TryHackMe",
+      username: "vineeth-agi",
+      url: "https://tryhackme.com/p/vineeth-agi",
+    },
+    codeforces: {
+      label: "Codeforces",
+      username: "vineeth-agi",
+      url: "https://codeforces.com/profile/vineeth-agi",
+    },
+  } satisfies Record<SocialPlatform, { label: string; username: string; url: string }>,
+
+  // ── SEO defaults ──────────────────────────────────────────────────────────
+  seo: {
+    titleTemplate: "%s | Vineeth Kumar",
+    defaultTitle: "Vineeth Kumar",
+    defaultDescription:
+      "Full stack web developer portfolio showcasing projects and skills in Next.js, React, TypeScript, and full-stack development and technical blogs",
+    keywords: [
+      "Vineeth Kumar",
+      "Full Stack Developer",
+      "React",
+      "Next.js",
+      "JavaScript",
+      "TypeScript",
+      "Node.js",
+      "Web Development",
+      "Portfolio",
+      "Software Engineer",
+    ],
+    twitterHandle: "@zerolatency_",
+    locale: "en_US",
+    themeColor: "#0B0D0E",
+  },
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  nav: [
+    { path: "/portfolio", name: "About" },
+    { path: "/portfolio/projects", name: "Projects" },
+    { path: "/portfolio/experience", name: "Experience" },
+    { path: "/portfolio/hackathons", name: "Hacks" },
+    { path: "/portfolio/blogs", name: "Blogs" },
+  ],
+
+  // ── Content: Experiences ──────────────────────────────────────────────────
+  experiences: [
+    {
+      role: "Software Development Engineer Intern",
+      year: "Jan 2023 - Jun 2023",
+      company: "Amadeus",
+      type: "Internship",
+      location: "Bangalore, On-Site",
+      logo: null,
+      responsibility: [
+        [
+          { text: "Contributed to " },
+          { text: "Java / Spring Boot", bold: true },
+          { text: " services backing internal travel-industry tooling." },
+        ],
+        [
+          { text: "Built " },
+          { text: "Angular", bold: true },
+          { text: " UI features against " },
+          { text: "REST APIs", bold: true },
+          { text: " over a " },
+          { text: "MySQL", bold: true },
+          { text: " data layer." },
+        ],
+      ],
+      techstacks: ["Java", "Spring Boot", "Angular", "MySQL", "REST APIs"],
+    },
+    {
+      role: "Software Development Engineer 1",
+      year: "Jul 2023 - Aug 2025",
+      company: "Amadeus",
+      type: "Full-Time",
+      location: "Bangalore, On-Site",
+      logo: null,
+      responsibility: [
+        [
+          { text: "Built and maintained " },
+          { text: "microservices", bold: true },
+          { text: " in " },
+          { text: "Java, Spring Boot, and C++", bold: true },
+          { text: " backing travel-industry platforms." },
+        ],
+        [
+          { text: "Shipped " },
+          { text: "Angular", bold: true },
+          { text: " UIs wired to " },
+          { text: "REST APIs", bold: true },
+          { text: " with " },
+          { text: "MySQL and MongoDB", bold: true },
+          { text: " data layers." },
+        ],
+        [
+          { text: "Deployed services on " },
+          { text: "Azure", bold: true },
+          { text: " using " },
+          { text: "Docker", bold: true },
+          { text: " with end-to-end " },
+          { text: "CI/CD", bold: true },
+          { text: " pipelines." },
+        ],
+        [
+          { text: "Hardened the codebase with " },
+          { text: "application security tooling", bold: true },
+          { text: " including " },
+          { text: "Fortify and Black Duck", bold: true },
+          { text: " to catch vulnerabilities pre-release." },
+        ],
+      ],
+      techstacks: [
+        "Java",
+        "Spring Boot",
+        "C++",
+        "Angular",
+        "REST APIs",
+        "MySQL",
+        "MongoDB",
+        "Docker",
+        "Azure",
+        "Microservices",
+        "CI/CD",
+      ],
+    },
+  ],
+
+  // ── Content: Projects ─────────────────────────────────────────────────────
+  projects: [
+    {
+      title: "DeepFind.Me",
+      category: "SaaS · OSINT Platform",
+      description:
+        "Educational OSINT platform offering tools and resources to help users understand and manage their digital footprint.",
+      techstacks: ["Next.js", "NestJS", "PostgreSQL", "Docker", "AWS", "OpenAI API"],
+      status: "live",
+      link: "https://deepfind.me",
+      preview: "/dashboard.png",
+    },
+    {
+      title: "Bucket0",
+      category: "SaaS · Storage",
+      description:
+        "Platform to store files and manage all your S3-compatible buckets in a single, powerful interface.",
+      techstacks: ["Next.js", "TypeScript", "PostgreSQL", "Tailwind CSS"],
+      status: "live",
+      link: "https://bucket0.com",
+      preview: "/dashboard.png",
+      previewDark: "/dashboard.png",
+    },
+    {
+      title: "Nimu",
+      category: "SaaS · AI Outreach",
+      description:
+        "Reputation-first AI outreach platform with automated domain authentication, multi-step drip campaigns, mailbox warm-up, and real-time deliverability monitoring.",
+      techstacks: ["Next.js", "NestJS", "Drizzle ORM", "Neon Postgres", "BullMQ", "Better Auth", "Tailwind CSS", "Docker"],
+      status: "building",
+      link: "https://nimu.app",
+      preview: "/dashboard.png",
+      previewDark: "/dashboard.png",
+    },
+    {
+      title: "OpenVScan",
+      category: "Open Source · Security",
+      description:
+        "Web-based vulnerability scanner that integrates open-source tools with AI to deliver smarter, faster and more reliable pre-production security testing.",
+      techstacks: ["Next.js", "NestJS", "TypeScript", "Tailwind CSS"],
+      status: "building",
+      link: "https://www.openvscan.com",
+      github: "vineeth-agi/openvscan",
+      preview: "/dashboard.png",
+    },
+    {
+      title: "openai-api-helper",
+      category: "Open Source · npm",
+      description:
+        "Straightforward npm package designed to simplify making calls to the OpenAI API for various text-based prompts and responses.",
+      techstacks: ["JavaScript", "TypeScript"],
+      status: "active",
+      link: "https://www.npmjs.com/package/openai-api-helper",
+      github: "vineeth-agi/openai-api-helper",
+      preview: "/dashboard.png",
+    },
+    {
+      title: "SmartText Enhancer",
+      category: "Chrome Extension · AI",
+      description:
+        "Productivity-focused Chrome extension that uses AI to summarize content and check spelling and grammar.",
+      techstacks: ["JavaScript", "HTML", "CSS", "Express", "OpenAI API"],
+      status: "active",
+      link: "https://chromewebstore.google.com/detail/smarttext-enhancer/chmpfoicecijpgmgcpnfhakmeaofmipm",
+      preview: "/dashboard.png",
+    },
+  ],
+
+  // ── Content: Hackathons ───────────────────────────────────────────────────
+  hackathons: [
+    {
+      title: "AI Blox",
+      event: "vibeFORWARD Hackathon",
+      year: "Apr 2026",
+      placement: "1st Place",
+      college: "Fordham Gabelli School of Business",
+      body: [
+        { text: "Built " },
+        { text: "AI Blox", bold: true },
+        {
+          text: ", a visual, drag-and-drop AI engineering tool inspired by Scratch. Snap together ",
+        },
+        { text: "500+ building blocks", bold: true },
+        { text: " for " },
+        { text: "LoRA fine-tuning, RAG pipelines, and multi-agent orchestration", bold: true },
+        { text: ", then generate production-ready code instantly." },
+      ],
+      techstacks: ["Next.js", "FastAPI", "Langchain", "Docker", "TypeScript", "Python"],
+      link: "https://devpost.com/software/ai-blox",
+    },
+    {
+      title: "NYU Pal",
+      event: "LLUS NYU x Pulse NYC Hackathon",
+      year: "Apr 2026",
+      placement: "3rd Place",
+      college: "NYU Kimmel Center",
+      body: [
+        { text: "Built " },
+        { text: "NYU Pal", bold: true },
+        { text: ", an " },
+        { text: "agentic AI platform", bold: true },
+        { text: " unifying a dozen scattered NYU student tools around three primitives — " },
+        { text: "Space, Items, and Knowledge", bold: true },
+        { text: ". Ships eight features in one MVP: study-space finder, marketplace exchange, peer mentoring with resume matching, live printer tracker, activity-partner matcher, community notes, sublet listings, and an AI professor lookup — all routed through " },
+        { text: "Claude Sonnet 4.6 with tool calling", bold: true },
+        { text: "." },
+      ],
+      techstacks: ["Next.js", "TypeScript", "Tailwind CSS", "Drizzle ORM", "Neon Postgres", "Claude API", "Vercel AI SDK", "Leaflet"],
+      link: "https://github.com/vineeth-agi/nyu-maxxxxing",
+    },
+  ],
+
+  // ── Content: Research ─────────────────────────────────────────────────────
+  research: [] as Array<{
+    title: string;
+    year: string;
+    authors?: string[];
+    venue?: string;
+    link?: string;
+    description?: string;
+  }>,
+};
+
+export type SiteConfig = typeof siteConfig;

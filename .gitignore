@@ -1,0 +1,135 @@
+
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+# .env.example is committed as a reference — others stay ignored
+!.env.example
+
+# Generated DB schema dumps (regenerated via npm run db:introspect-prod)
+supabase/dev-bootstrap.sql
+
+# Generated seed data dumps (regenerated via npm run db:seed-from-prod)
+# May contain non-PII content rows; still gitignored to avoid bloat.
+supabase/seed.sql
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+.qodo
+
+# GCP / Google Cloud credentials (ALL service account keys)
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig*.json
+!next.config*.json
+!components.json
+!postcss.config*.json
+
+# Build & CI artifacts
+build-log*.txt
+build-result.txt
+build.log
+tsc-errors.txt
+install.log
+npm_install.log
+knip-report.json
+
+# Temp / one-off dev files
+tmpclaude-*
+refactor.js
+*.scratch.ts
+*.scratch.js
+/scratch/
+
+# Planning documents (keep in Notion/Linear, not git)
+agifeaturesplan*.md
+leetcodeplan.md
+memoryplan.md
+
+# IDE / agent tool directories
+.kiro/
+.windsurf/
+.devin/
+.tools/
+skills-lock.json
+
+# InsForge & AI agent skills
+.insforge
+.agent
+.agents
+.augment
+.claude
+.cline
+.github/copilot*
+.kilocode
+.qoder
+.qwen
+.roo
+.trae
+.windsurf
+
+# Migration runner (Supabase → InsForge spec)
+.insforge/
+.env.migration
+
+# Audit 2026-05-29 — additions per docs/audit-2026-05-29/
+prod-db.sql
+supabase/.temp/
+tsc-out.txt
+
+# Developer scripts, migrations & SQL (sensitive / regenerable)
+/scripts/
+/migrations/
+*.sql
+
+# Internal security audits & reports (contain prod infra details)
+docs/audit-2026-05-29/
+docs/security/
+docs/api-security-assessment.md
+docs/auth-github-memory-audit.md
+docs/final_review_report.md
+
+# AI agent config (contains production InsForge appkey)
+AGENTS.md
+
+# Developer-only utility scripts
+check-tsc.ps1
+
+# Backups & scratch
+/backups/
+/scratch/

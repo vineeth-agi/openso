@@ -1,0 +1,29 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "registries": {
+    "@formcn": "https://formcn.dev/r/{name}.json",
+    "@reui": "https://reui.io/r/new-york/{name}.json",
+    "@ss-blocks": "https://shadcnstudio.com/r/blocks/{name}.json",
+    "@coss": "https://coss.com/ui/r/{name}.json",
+    "@efferd": "https://efferd.com/r/{style}/{name}.json",
+    "@motion-primitives": "https://motion-primitives.com/c/{name}.json"
+  }
+}

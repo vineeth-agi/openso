@@ -1,0 +1,1 @@
+export { ingestGitHub } from "./github";
