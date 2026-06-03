@@ -65,7 +65,6 @@ Extensible tool system supporting the **Model Context Protocol (MCP)**. Connect 
 | **Caching & Rate Limiting** | [Upstash Redis](https://upstash.com/) |
 | **Background Jobs** | [Upstash Workflow](https://upstash.com/docs/qstash/workflow/gettingstarted) + [QStash](https://upstash.com/docs/qstash/whatisqstash) |
 | **Sandboxed Execution** | [Daytona SDK](https://www.daytona.io/) |
-| **Email** | [Resend](https://resend.com/) |
 | **GitHub Integration** | [Octokit](https://github.com/octokit/rest.js) + GitHub App |
 | **Testing** | [Vitest](https://vitest.dev/) + [fast-check](https://fast-check.dev/) (property-based) |
 

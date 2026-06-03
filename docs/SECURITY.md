@@ -37,7 +37,6 @@ Everything else is **server-only** and must never reach the client.
 | `QSTASH_CURRENT_SIGNING_KEY` | QStash signature verification key | Server-only |
 | `QSTASH_NEXT_SIGNING_KEY` | QStash next signing key (rotation) | Server-only |
 | `DAYTONA_API_KEY` | Daytona sandbox API key | Server-only |
-| `RESEND_API_KEY` | Resend email API key | Server-only |
 | `FIRECRAWL_API_KEY` | Firecrawl API key | Server-only |
 | `CRON_SECRET` | Shared secret guarding cron routes | Server-only |
 | `TOKEN_ENC_KEY` | AES-256-GCM master key for token encryption | Server-only |

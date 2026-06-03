@@ -147,9 +147,6 @@ export async function GET(request: Request) {
       console.error("[auth/callback] profile bootstrap failed:", bootstrapErr);
     }
 
-    if (type === "recovery") {
-      return NextResponse.redirect(`${origin}/reset-password`);
-    }
     return NextResponse.redirect(`${origin}${redirectTo}`);
   } catch (err) {
     console.error("[auth/callback] exchange threw:", err);
