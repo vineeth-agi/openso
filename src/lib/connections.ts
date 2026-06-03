@@ -266,6 +266,19 @@ export async function disconnectApp(
   const db = createAdminClient();
   const nowIso = new Date().toISOString();
 
+  // Fetch connection first to get the access token for provider-side revocation
+  let tokenToRevoke: string | null = null;
+  if (provider === "github") {
+    try {
+      const conn = await getConnectionAdmin(userId, "github");
+      if (conn?.access_token) {
+        tokenToRevoke = conn.access_token;
+      }
+    } catch (e) {
+      console.warn("[connections] Failed to fetch connection for token revocation:", e);
+    }
+  }
+
   // 1. Revoke + null secret columns. Single source of truth.
   const { error: updateErr } = await db.database.from("connected_apps")
     .update({
@@ -321,5 +334,33 @@ export async function disconnectApp(
     await deleteGitHubMemory(userId).catch((e) =>
       console.warn("[connections] Failed to delete GitHub memory:", e),
     );
+
+    // Revoke authorization on GitHub's side (delete grant)
+    if (tokenToRevoke) {
+      try {
+        const clientId = process.env.GITHUB_CLIENT_ID;
+        const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+        if (clientId && clientSecret) {
+          const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+          const res = await fetch(`https://api.github.com/applications/${clientId}/grant`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Basic ${credentials}`,
+              Accept: "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ access_token: tokenToRevoke }),
+          });
+          if (!res.ok) {
+            console.warn(`[connections] GitHub grant deletion returned status ${res.status}:`, await res.text().catch(() => ""));
+          } else {
+            console.log(`[connections] Successfully deleted GitHub grant for user ${userId}`);
+          }
+        }
+      } catch (e) {
+        console.warn("[connections] Failed to delete GitHub application grant:", e);
+      }
+    }
   }
 }
