@@ -59,6 +59,112 @@ function buildNavForUsername(username: string, opts: NavBuildOptions = {}) {
   return nav;
 }
 
+async function enrichProjectsWithAI(
+  projects: {
+    title: string;
+    category: string;
+    description: string;
+    techstacks: string[];
+    status: "live" | "building" | "active" | "archived";
+    link: string | null;
+    github: string | null;
+    preview: string | null;
+    previewDark: string | null;
+  }[],
+  resume: ResumeData,
+): Promise<{ description: string; techstacks: string[] }[]> {
+  const needsEnrichment = projects
+    .map((p, idx) => ({
+      idx,
+      title: p.title,
+      description: p.description,
+      techstacks: p.techstacks,
+      github: p.github,
+    }))
+    .filter((p) => !p.description.trim() || p.techstacks.length <= 1);
+
+  if (needsEnrichment.length === 0) {
+    return projects.map((p) => ({ description: p.description, techstacks: p.techstacks }));
+  }
+
+  const model = google(process.env.PIONEER_MODEL || "deepseek-ai/DeepSeek-V4-Flash");
+
+  const skillsArray = (() => {
+    const s = resume.skills;
+    if (!s) return [];
+    if (Array.isArray(s)) return s.filter((x) => typeof x === "string");
+    if (typeof s === "object") {
+      const keys = ["languages", "frameworks", "tools", "soft", "other"];
+      const out: string[] = [];
+      for (const k of keys) {
+        const val = (s as Record<string, unknown>)[k];
+        if (Array.isArray(val)) {
+          for (const item of val) {
+            if (typeof item === "string") out.push(item);
+          }
+        }
+      }
+      return out;
+    }
+    return [];
+  })();
+
+  const prompt = `You are a professional portfolio enhancer.
+Given the developer's background and a list of their GitHub repositories, generate a professional 1-2 sentence description and an expanded tech stack for each repository that currently has empty/generic data.
+
+Developer Background:
+Name: ${resume.name || ""}
+Summary: ${resume.summary || ""}
+Skills: ${skillsArray.join(", ")}
+
+Repositories to enhance:
+${needsEnrichment
+  .map(
+    (r) => `${r.idx + 1}. Title: ${r.title}
+   Current Description: ${r.description || "(none)"}
+   Current Tech Stack: ${r.techstacks.join(", ") || "(none)"}
+   GitHub URL: ${r.github ? `https://github.com/${r.github}` : "(none)"}`,
+  )
+  .join("\n\n")}
+
+For each repository:
+1. Generate a professional, context-aware description (1-2 sentences) of what the project does based on its title and main language. Do NOT make up unrealistic details; keep it simple and plausible.
+2. Expand the tech stack to include 2-5 relevant tools, libraries, or methodologies (e.g. if main language is Python, maybe add "pytest", "CLI", or "Data structures" if appropriate).`;
+
+  try {
+    const { object } = await generateObject({
+      model,
+      schema: z.object({
+        enhancements: z.array(
+          z.object({
+            index: z.number().describe("The original 1-based index of the repository from the prompt list"),
+            description: z.string().describe("A professional, 1-2 sentence description"),
+            techstacks: z.array(z.string()).describe("A list of 2-5 relevant technologies"),
+          }),
+        ),
+      }),
+      prompt,
+    });
+
+    const result = projects.map((p) => ({ description: p.description, techstacks: p.techstacks }));
+    for (const enhancement of object.enhancements) {
+      const originalIdx = enhancement.index - 1;
+      if (originalIdx >= 0 && originalIdx < projects.length) {
+        if (!result[originalIdx].description.trim()) {
+          result[originalIdx].description = enhancement.description;
+        }
+        if (result[originalIdx].techstacks.length <= 1) {
+          result[originalIdx].techstacks = enhancement.techstacks;
+        }
+      }
+    }
+    return result;
+  } catch (err) {
+    console.error("[portfolio-config-generator] AI project enrichment failed:", err);
+    return projects.map((p) => ({ description: p.description, techstacks: p.techstacks }));
+  }
+}
+
 // ── Generator ──────────────────────────────────────────────────────────────
 
 /**
@@ -287,6 +393,14 @@ export async function generatePortfolioConfig(
     previewDark: null,
   }));
 
+  // 3c. Enrich GitHub-only projects with AI descriptions and expanded tech stacks if they are missing
+  const enriched = await enrichProjectsWithAI(finalProjects, resume);
+  const finalProjectsWithAI = finalProjects.map((p, i) => ({
+    ...p,
+    description: enriched[i].description,
+    techstacks: enriched[i].techstacks,
+  }));
+
   // 4. Determine portfolio URL slug
   const displaySlug = slugify(resume.name || "my-portfolio");
 
@@ -378,7 +492,7 @@ export async function generatePortfolioConfig(
       techstacks: exp.techstacks ?? [],
     })),
 
-    projects: finalProjects,
+    projects: finalProjectsWithAI,
 
     hackathons: (core.hackathons ?? []).map((h: any) => ({
       title: h.title,

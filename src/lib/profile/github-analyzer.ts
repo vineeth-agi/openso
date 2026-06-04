@@ -158,7 +158,7 @@ async function analyzeGitHub(userId: string): Promise<GitHubProfile | null> {
   //    For unauthenticated calls (no token) the `/users/:user/repos`
   //    endpoint returns public repos only by definition.
   const repoUrl = token
-    ? "https://api.github.com/user/repos?type=owner&visibility=public"
+    ? "https://api.github.com/user/repos?affiliation=owner&visibility=public"
     : `https://api.github.com/users/${encodeURIComponent(username)}/repos?type=owner`;
 
   const allRepos = await fetchAllRepos(repoUrl, headers);
