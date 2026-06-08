@@ -43,8 +43,8 @@ type InsforgeClient = ReturnType<typeof createInsforgeClient>;
 export const createClient = cache(async (): Promise<InsforgeClient> => {
   const accessToken = await readAccessToken();
   return createInsforgeClient({
-    baseUrl: process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
-    anonKey: process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
+    baseUrl: process.env.INSFORGE_BASE_URL!,
+    anonKey: process.env.INSFORGE_ANON_KEY!,
     isServerMode: true,
     edgeFunctionToken: accessToken,
   } as Parameters<typeof createInsforgeClient>[0]);
@@ -90,8 +90,8 @@ export const getAuthUser = cache(async (): Promise<{
   // intentionally create a new instance here (bypassing the cached
   // `createClient`) so the new bearer is used for the retry.
   const client2 = createInsforgeClient({
-    baseUrl: process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
-    anonKey: process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
+    baseUrl: process.env.INSFORGE_BASE_URL!,
+    anonKey: process.env.INSFORGE_ANON_KEY!,
     isServerMode: true,
     edgeFunctionToken: refreshed,
   } as Parameters<typeof createInsforgeClient>[0]);

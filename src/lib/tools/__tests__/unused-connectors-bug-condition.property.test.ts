@@ -21,6 +21,7 @@ const PROJECT_ROOT = path.resolve(__dirname, "../../../../");
  * The set of unused providers that should be removed from the codebase.
  */
 const UNUSED_PROVIDERS = [
+  "gmail",
   "google_calendar",
   "google_docs",
   "google_sheets",
@@ -56,6 +57,7 @@ function pathExists(relativePath: string): boolean {
  * Map from provider slug to the native-tool builder file name.
  */
 const NATIVE_TOOL_FILES: Record<UnusedProvider, string> = {
+  gmail: "src/lib/tools/native-tools/gmail.ts",
   google_calendar: "src/lib/tools/native-tools/calendar.ts",
   google_docs: "src/lib/tools/native-tools/google-docs.ts",
   google_sheets: "src/lib/tools/native-tools/google-sheets.ts",
@@ -75,6 +77,10 @@ const OAUTH_ROUTE_FILES: Partial<Record<UnusedProvider, string[]>> = {
   notion: [
     "src/app/api/connect/notion/route.ts",
     "src/app/api/connect/notion/callback/route.ts",
+  ],
+  gmail: [
+    "src/app/api/auth/google/route.ts",
+    "src/app/api/auth/google/callback/route.ts",
   ],
 };
 
@@ -141,8 +147,8 @@ describe("Bug Condition: Unused Connectors Present in Codebase", () => {
     );
   });
 
-  it("Property 1: No OAuth route files exist for linkedin or notion", () => {
-    const providersWithRoutes: UnusedProvider[] = ["linkedin", "notion"];
+  it("Property 1: No OAuth route files exist for linkedin, notion, or gmail", () => {
+    const providersWithRoutes: UnusedProvider[] = ["linkedin", "notion", "gmail"];
     const providerWithRoutesArb = fc.constantFrom(...providersWithRoutes);
 
     fc.assert(

@@ -182,7 +182,15 @@ const Footer = () => {
         </div>
         <p className="text-xs text-muted-foreground/60">
           &copy; {new Date().getFullYear()} {siteConfig.identity.name}. All rights
-          reserved.
+          reserved. &middot; LLM credits by{" "}
+          <a
+            className="text-muted-foreground/80 hover:text-foreground hover:underline font-medium"
+            href="https://x.com/adxtyahq"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Aditya
+          </a>
         </p>
       </div>
     </footer>

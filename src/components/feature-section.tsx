@@ -1,6 +1,6 @@
 import type React from "react";
 
-import { SearchIcon, BriefcaseIcon, GitBranchIcon, LayoutDashboardIcon, LinkIcon, SparklesIcon } from "lucide-react";
+import { SearchIcon, GitBranchIcon, LayoutDashboardIcon, LinkIcon, SparklesIcon } from "lucide-react";
 
 import { DecorIcon } from "@/components/ui/decor-icon";
 import { cn } from "@/lib/utils";
@@ -84,11 +84,6 @@ const features: FeatureType[] = [
 		title: "Open Source Issue Finder",
 		icon: <SearchIcon />,
 		description: "Find perfect open source issues based on your skills and interests with AI-powered matching.",
-	},
-	{
-		title: "Job Matching Engine",
-		icon: <BriefcaseIcon />,
-		description: "Get matched with jobs from top companies and YC startups based on your GitHub profile.",
 	},
 	{
 		title: "Portfolio Creation",

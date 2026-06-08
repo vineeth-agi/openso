@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Briefcase,
   Bug,
   Code,
   FolderGit2,
@@ -19,19 +18,9 @@ const SUGGESTIONS = [
     icon: Bug,
   },
   {
-    label: "Search tech jobs",
-    prompt: "Find remote Senior React Developer jobs",
-    icon: Briefcase,
-  },
-  {
     label: "Beginner bugs",
     prompt: "Search for TypeScript beginner-friendly bugs",
     icon: Code,
-  },
-  {
-    label: "Jobs at Stripe",
-    prompt: "Find developer jobs at Stripe",
-    icon: Briefcase,
   },
   {
     label: "Search the web",
@@ -56,7 +45,7 @@ function EmptyState({ onSend }: { onSend: (prompt: string) => void }) {
         How can I help you today?
       </h2>
       <p className="mt-1.5 max-w-sm text-center text-[13px] leading-relaxed text-muted-foreground">
-        Find open-source issues to contribute to, search for jobs, browse repos, or search the web.
+        Find open-source issues to contribute to, browse repos, or search the web.
       </p>
 
       <div className="mt-6 grid w-full max-w-lg grid-cols-2 gap-2">

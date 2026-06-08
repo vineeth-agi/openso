@@ -1,11 +1,5 @@
 /**
- * Amygdala Emotional Boost — emotional memories are encoded more strongly.
- *
- * In the human brain, the amygdala modulates memory encoding:
- * - Emotional events trigger norepinephrine + cortisol release
- * - This strengthens hippocampal encoding (LTP boost)
- * - Emotional memories have longer half-lives and resist decay
- * - Both positive and negative emotions enhance encoding (not just fear)
+ * Emotional Boost — emotional memories are encoded more strongly.
  *
  * Implementation:
  * - Detect emotional content via LLM structured extraction
@@ -97,7 +91,7 @@ ${facts.map((f, i) => `[${i}] ${f}`).join("\n")}`;
 
 /**
  * Compute importance boost from emotional intensity.
- * In the brain: amygdala activation during encoding → stronger trace.
+
  * High emotional intensity → up to +0.3 importance bonus.
  */
 export function computeEmotionalImportanceBoost(intensity: number): number {

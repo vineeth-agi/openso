@@ -25,7 +25,7 @@ import {
 import { mergeAndRankProjects } from "./project-merger";
 import type { ResumeData } from "./resume-extractor";
 
-import { google } from "@/lib/ai/google-provider";
+import { google, getDefaultPioneerModel } from "@/lib/ai/google-provider";
 import { createAdminClient } from "@/lib/insforge/admin";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ async function enrichProjectsWithAI(
     return projects.map((p) => ({ description: p.description, techstacks: p.techstacks }));
   }
 
-  const model = google(process.env.PIONEER_MODEL || "deepseek-ai/DeepSeek-V4-Flash");
+  const model = google(process.env.PIONEER_MODEL || getDefaultPioneerModel());
 
   const skillsArray = (() => {
     const s = resume.skills;
@@ -176,7 +176,7 @@ async function generateCoreConfig(
   repos: RepoAnalysis[],
   githubUsername: string,
 ): Promise<Partial<PortfolioSiteConfig>> {
-  const model = google(process.env.PIONEER_MODEL || "deepseek-ai/DeepSeek-V4-Flash");
+  const model = google(process.env.PIONEER_MODEL || getDefaultPioneerModel());
 
   // ALL repos (non-fork, sorted by stars) for project generation
   const topRepos = [...repos]

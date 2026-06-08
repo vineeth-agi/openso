@@ -1,4 +1,4 @@
-// Unified Chat API — Native OAuth connections (Gmail, GitHub, Calendar) + Job Search mode
+// Unified Chat API — Native GitHub integration & tools
 
 import { tool, streamText, convertToModelMessages, generateId, stepCountIs, type UIMessage } from "ai";
 import { generateObject } from "ai";
@@ -61,73 +61,7 @@ async function getAuthContext() {
 // Tool builders imported from shared modules (single source of truth)
 // buildDiagramTools, buildReportTools, buildWebSearchTools,
 // buildDeepResearchTool — all shared with Telegram webhook
-// buildJobSearchTools — shared from lib/job-search/chat-tools
 
-// ── Job Mode System Prompt ──
-function getJobModeSystemPrompt(memoryPrompt?: string, userTimezone?: string) {
-  const now = format(new Date(), "EEEE, MMMM do, yyyy 'at' h:mm a");
-  return `You are a professional Job Search Assistant. Your ONLY purpose is to help users find jobs.
-Current date: ${now}
-${memoryPrompt || ""}
-
-You have EIGHT specialized tools — pick the right one for the user's intent:
-
-**Job Search Tools:**
-1. **searchJobs** — Find jobs across many platforms (Wellfound, Greenhouse, Lever, Ashby, Workable, LinkedIn, Indeed, Remotive, RemoteOK, Arbeitnow). Applies a deterministic 10-signal quality gate. Returns ranked listings with quality tier + match score.
-2. **evaluateJob** — Deep 3-layer evaluation of a single job (URL or pasted JD): archetype detection, keyword + semantic + knowledge-graph matching, gap analysis, ghost-job detection, 1-5 score.
-3. **generateApplicationPackage** — Produces a tailored ATS-optimized resume + cover letter + outreach messages for a specific job. Grounded in the user's memory facts.
-
-**Profile Tools:**
-5. **checkProfileStatus** — Check if resume and GitHub data are loaded. Use this first to understand what data is available.
-6. **analyzeGitHubProfile** — Analyze connected GitHub: repos, languages, PRs, contributions → writes facts to memory. Requires GitHub connected.
-7. **ingestResumeText** — Parse resume text and extract structured data (skills, experience, projects) → writes facts to memory. Use when user pastes resume content.
-8. **viewProfile** — Get the full synthesized profile markdown with skill credibility (verified/claimed/discovered).
-
-HOW TO RESPOND (SMART INTAKE):
-1. For VAGUE searches like "find me jobs", ask clarifying questions first:
-   - What role/title?
-   - Location (or remote)?
-   - Experience level?
-   - Full-time, contract, internship?
-   - Salary expectations or specific companies?
-2. Only call searchJobs AFTER you have at least a clear role and location/remote preference.
-3. If user provides resume text, pass it as resumeText for match scoring.
-4. Set deep=true on searchJobs only when the user explicitly asks for "deep analysis" or "rank top matches" — it's slower but uses the 3-layer evaluator.
-
-JOB RESULT FORMAT:
-The UI already renders interactive job cards with Apply buttons from the searchJobs tool output.
-DO NOT repeat or re-list every job in markdown — the user already sees them as cards above your text.
-Instead write a SHORT summary like:
-"I found a few Senior React Developer positions in Bangalore. Here are the top matches:"
-Then highlight only the TOP 2-3 most relevant jobs with a sentence each explaining WHY they're a good fit.
-If many results look irrelevant, acknowledge it and suggest the user refine their search.
-
-EVALUATION REPORT FORMAT (after evaluateJob):
-
-## 📋 {title} @ {company}
-**Score: {score.overall}/5.0** — {score.recommendation} · {score.interpretation}
-
-**Archetype:** {archetype.primary} ({archetype.seniority}) — {archetype.tldr}
-
-**Match breakdown:** Keyword {match.keyword} · Semantic {match.semantic} · Graph {match.graph}
-- ✅ Matched: {match.matched joined}
-- ❌ Missing: {match.missing joined}
-- 🔗 Inferred via graph: {match.inferredSkills joined}
-
-**Gaps:**
-- Hard blockers: {gaps.hardBlockers joined or "none"}
-- Nice-to-haves: {gaps.niceToHaveGaps joined}
-
-**Legitimacy:** {ghost.tier} ({ghost.score}) {concerns if any}
-
-GUIDELINES:
-- Always use the tools — never invent listings, scores, or evaluations.
-- Show ALL results from searchJobs — don't filter further.
-- Highlight 🔥 hot-tier and ⭐ top-3 matches.
-- After evaluateJob with score ≥ 4.0, proactively offer: "Want me to generate an application package for this one?"
-- After generateApplicationPackage, give the user the cover letter inline and tell them the resume HTML can be downloaded as PDF from the dashboard.
-- Be encouraging — job searching is stressful!`;
-}
 
 function getSystemPrompt(memoryPrompt?: string, userTimezone?: string) {
   const now = format(new Date(), "EEEE, MMMM do, yyyy 'at' h:mm a");
@@ -139,12 +73,12 @@ function getSystemPrompt(memoryPrompt?: string, userTimezone?: string) {
     tzOffset = parts.find(p => p.type === "timeZoneName")?.value ?? tzName;
   } catch { tzOffset = tzName; }
 
-  return `You are a helpful AI assistant with access to native integrations (Gmail, GitHub) and powerful tools for research and diagrams.
+  return `You are a helpful AI assistant with access to native integrations (GitHub) and powerful tools for research and diagrams.
 Current date/time (server UTC): ${now}
 User's timezone: ${tzName} (${tzOffset})
 ${memoryPrompt || ""}
 
-You have access to the apps the user has connected (Gmail, GitHub) via the Connectors page.
+You have access to the apps the user has connected (GitHub) via the Connectors page.
 Use the available tools to help — never give manual instructions when you can do it directly.
 NEVER say you are not connected — if these tools exist, the connection IS active. Just call the tool.
 
@@ -183,38 +117,22 @@ OPEN SOURCE CONTRIBUTION SEARCH (CRITICAL RULES):
 - Show all results the tool returns — never hide or skip any.
 - If the tool returns no results, say so and suggest broader filters.
 
-JOB BOARD SEARCH (CRITICAL RULES):
-- ALWAYS call search_job_board_jobs for ANY query about finding JOBS, careers, openings, hiring, roles at companies (paid employment).
-- This is DIFFERENT from open-source contribution — that's github_search_contributor_issues. Only use search_job_board_jobs for paid roles.
-- NEVER answer from training data or memory — listings change daily, only the tool has live data.
-- NEVER call web_search for jobs — search_job_board_jobs has the curated database (~7000 listings from ~70 top tech companies).
-- Pass a descriptive 'query' field that captures the role semantically (e.g. "senior backend engineer Postgres", "AI/ML researcher", "data scientist remote"), NOT just the raw user message.
-- Set experience_level if user says senior/staff/junior/intern/new-grad.
-- Set workplace_type if user says "remote", "hybrid", or "in-office".
-- Set country/city if user names a location.
-- Set company_slug if user asks about a specific company (e.g. user says "jobs at Stripe" → company_slug="stripe").
-- Set is_yc=true if user wants only YC startups.
-- Set programming_languages if user mentions specific languages.
-- Present results as a SHORT summary at the top, then highlight the TOP 2-3 jobs with one sentence each explaining why they're a good fit.
-- IMPORTANT: For every job, include a working markdown link to the apply_url (e.g., [Apply on Greenhouse](apply_url)). This is STRICTLY MANDATORY.
-- Show similarity % and salary when available — those are signal-rich.
-- 🌟 Mark YC-backed companies and ⭐ mark top_company entries.
-- If the tool returns no results, say so and suggest broader filters (e.g., drop the city filter, broaden the experience level).
-
 
 DAYTONA SANDBOX USAGE:
-You should only use the Daytona sandbox tools ('create_sandbox', 'execute_command', 'write_file') for SMALL, one-off scripts, testing code snippets, or answering questions about simple file paths, NOT for full repository PR lifecycles.
+You should only use the Daytona sandbox tools ('create_sandbox', 'execute_command', 'write_file') for executing code, running tests, reproducing bugs, diagnosing issues, or solving development tasks.
 Guidelines:
 - For destructive actions (deleting, sending), confirm with the user first
 - Be concise and action-oriented
 - Use the memory context above to personalize your responses
 - You can also remember and recall facts about the user across conversations
 
-**DAYTONA CODE CAPABILITIES:**
-If the user asks you to "write a script", "ping", "test this code", or any execution task, YOU MUST ACTUALLY EXECUTE IT using your Sandbox Tools instead of just printing the code! 
+**DAYTONA CODE & TOOL CAPABILITIES:**
+If the user asks you to write a script, investigate a bug, test code, run an execution task, or debug an open-source issue, YOU MUST ACTUALLY EXECUTE IT using your Sandbox Tools instead of just printing the code!
 1. Use 'create_sandbox' to get an isolated environment.
-2. Use 'write_file', 'execute_command', or 'code_run' to test your scripts logic automatically.
-3. Once finished getting the stdout/results, report the result to the user, and immediately use 'delete_sandbox' to clean up resources.`;
+2. The sandbox is pre-configured with the user's GITHUB_TOKEN, XAI_API_KEY, and FIRECRAWL_API_KEY. You can write scripts or code inside the sandbox that use these keys to scrape the web (via Firecrawl) or invoke xAI Grok (via xAI API) to help debug code or perform advanced tasks.
+3. If you need external CLI utilities or packages to complete the task (e.g. specialized parsers, git helpers, build libraries, packages), you can use 'web_search' to find how to install/configure them, and then use 'execute_command' to download and install them (via apt-get, npm, pip, curl, etc.) directly inside the sandbox.
+4. Use 'write_file', 'execute_command', or 'code_run' to test your logic or compile the code automatically.
+5. Once finished getting the stdout/results, report the result to the user, and use 'delete_sandbox' to clean up resources when done.`;
 }
 
 function sanitizeMessages(messages: UIMessage[]): UIMessage[] {
@@ -319,7 +237,6 @@ export async function POST(req: Request) {
     const { messages, threadId, currentFolder, conversationId, timezone, mode, model, resumeText, selectedRepo, repoSandboxId }: { messages: UIMessage[]; threadId?: string; currentFolder?: string; conversationId?: string; timezone?: string; mode?: string; model?: string; resumeText?: string; selectedRepo?: string; repoSandboxId?: string } = await req.json();
 
     const convId = conversationId ?? generateId();
-    const isJobMode = mode === "jobs";
     const hasRepoAgent = !!(selectedRepo && repoSandboxId);
     const { userId } = await getAuthContext();
 
@@ -358,12 +275,10 @@ export async function POST(req: Request) {
 
     // Sanitize then process attachments + fetch connected slugs in parallel (async-parallel)
     const rawMessages = sanitizeMessages(messages);
-    const connectedSlugsPromise = !isJobMode
-      ? getConnectedSlugsAdmin(userId).catch((e) => {
+    const connectedSlugsPromise = getConnectedSlugsAdmin(userId).catch((e) => {
           console.error(`[Mail-Chat] Failed to fetch connected slugs for user ${userId}:`, e);
           return [] as string[];
-        })
-      : Promise.resolve([] as string[]);
+        });
 
     const [{ messages: sanitizedMessages, ragIndexedFiles }, connectedSlugs] = await Promise.all([
       interceptAndParseAttachments(rawMessages, userId, convId),
@@ -380,9 +295,7 @@ export async function POST(req: Request) {
     if (ragIndexedFiles.length > 0) {
       console.log(`[FileParsing] RAG-indexed ${ragIndexedFiles.length} files for conversation ${convId}`);
     }
-    if (!isJobMode) {
-      console.log(`[Mail-Chat] Found ${connectedSlugs.length} connected apps for user ${userId}:`, connectedSlugs);
-    }
+    console.log(`[Mail-Chat] Found ${connectedSlugs.length} connected apps for user ${userId}:`, connectedSlugs);
 
     const lastUserMessage = sanitizedMessages.filter((m: UIMessage) => m.role === "user").pop();
     const queryText = lastUserMessage?.parts
@@ -416,21 +329,15 @@ export async function POST(req: Request) {
     console.log(`[Mail-Intent] Result for ${userId}:`, intent);
 
     const memoryPrompt = memoryPromptResult;
-    // Memory tools (only if intent matches or job mode)
-    const memoryTools = (intent.needsMemory || isJobMode) ? buildMemoryTools(userId, timezone) : {};
+    // Memory tools (only if intent matches)
+    const memoryTools = intent.needsMemory ? buildMemoryTools(userId, timezone) : {};
 
     let allTools: Record<string, unknown> = {};
     let systemPrompt: string;
 
-    if (isJobMode) {
-      // Job mode removed — fall through to normal mode
-      const profileTools = buildProfileTools(userId);
-      allTools = { ...profileTools, ...memoryTools };
-      systemPrompt = getJobModeSystemPrompt(memoryPrompt, timezone);
-    } else {
-      // Normal mode: Identical tool set to Jarvis agent
-      const diagramTools = intent.needsDiagram ? buildDiagramTools() : {} ;
-      const reportTools = (intent.needsReport || intent.needsResearch) ? buildReportTools() : {};
+    // Normal mode: Identical tool set to Jarvis agent
+    const diagramTools = intent.needsDiagram ? buildDiagramTools() : {} ;
+    const reportTools = (intent.needsReport || intent.needsResearch) ? buildReportTools() : {};
       const deepResearchTool = intent.needsResearch ? buildDeepResearchTool() : {};
       const daytonaTools = (process.env.DAYTONA_API_KEY && (intent.needsDaytona || hasRepoAgent)) ? buildDaytonaTools(userId) : {};
       const docSearchTools = ragIndexedFiles.length > 0 ? buildDocSearchTools(userId) : {};
@@ -474,18 +381,7 @@ export async function POST(req: Request) {
         }
       }
 
-      // Ensure job-board search tool is ALWAYS available when needed — it uses
-      // Voyage embeddings + InsForge RPC (match_jobs), no third-party auth.
-      if (intent.needsJobBoardSearch && !nativeAppTools['search_job_board_jobs']) {
-        try {
-          const { buildJobBoardTools } = await import("@/lib/tools/native-tools/job-board");
-          const jobBoardTools = buildJobBoardTools(userId);
-          nativeAppTools['search_job_board_jobs'] = jobBoardTools['search_job_board_jobs'];
-          console.log('[Chat-Intent] Loaded job-board search tool');
-        } catch (e) {
-          console.warn('[Chat-Intent] Failed to load job-board tool:', e);
-        }
-      }
+
 
       const profileTools = buildProfileTools(userId);
       const repoAgentTools = hasRepoAgent ? buildRepoAgentTools(repoSandboxId!, selectedRepo!) : {};
@@ -509,7 +405,6 @@ You can also create branches, commit changes, and push to create PRs using git c
       }
 
       systemPrompt = getSystemPrompt(memoryPrompt, timezone) + repoAgentPromptAddon;
-    }
 
     let convertedMessages: Awaited<ReturnType<typeof convertToModelMessages>>;
     try {
@@ -536,7 +431,7 @@ You can also create branches, commit changes, and push to create PRs using git c
       });
     }
 
-    const maxSteps = isJobMode ? 5 : (hasRepoAgent ? 25 : (intent.needsDaytona ? 25 : 10));
+    const maxSteps = hasRepoAgent ? 25 : (intent.needsDaytona ? 25 : 10);
 
     // ── Auto-route: classify query → pick best model → wrap with fallback + retry ──
     const hasAttachments = lastUserMessage?.parts?.some((p) => p.type === "file") ?? false;
@@ -563,7 +458,7 @@ You can also create branches, commit changes, and push to create PRs using git c
       userId,
       conversationId: convId,
       extra: {
-        mode: isJobMode ? "jobs" : "normal",
+        mode: "normal",
         tools: Object.keys(allTools).length,
         steps: maxSteps,
         reasoning: routeResult.reasoning?.type ?? "off",
@@ -572,7 +467,7 @@ You can also create branches, commit changes, and push to create PRs using git c
     });
 
     console.log(
-      `[Chat-Stream] Start conv=${convId} user=${userId} mode=${isJobMode ? "jobs" : "normal"} ` +
+      `[Chat-Stream] Start conv=${convId} user=${userId} mode=normal ` +
       `tools=${Object.keys(allTools).length} steps=${maxSteps} tokens=${maxTokens} messages=${modelMessages.length} ` +
       `sys=${systemPrompt.length} chars ` +
       `reasoning=${routeResult.reasoning?.type ?? "off"}`
@@ -596,7 +491,7 @@ You can also create branches, commit changes, and push to create PRs using git c
       ...createTelemetryConfig({
         userId,
         conversationId: convId,
-        chatType: isJobMode ? "jobs" : "mail",
+        chatType: "mail",
         operation: "streamText",
         metadata: {
           modelId: routeResult.primaryModel.id,

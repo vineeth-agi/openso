@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { generateText } from "@/lib/ai/pioneer-compat-helper"
+import { generateText } from "@/lib/ai/xai-compat-helper"
 import { getConnectionAdmin } from "@/lib/connections"
 import { createAdminClient } from "@/lib/insforge/admin"
 import { getAuthUser } from "@/lib/insforge/server"
@@ -118,7 +118,7 @@ function gatherStats(repos: GithubRepo[], totalRepoCount: number) {
     }
 }
 
-/** Build AI prompt and call Pioneer */
+/** Build AI prompt and call xAI Grok */
 async function generateSummary(
     username: string,
     userData: { bio?: string; public_repos?: number; followers?: number; created_at?: string },
@@ -197,8 +197,8 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    // 3. Per-IP rate-limit: this route invokes Pioneer per request, so
-    //    without a limit it's both a Pioneer AI cost amplifier and a
+    // 3. Per-IP rate-limit: this route invokes xAI per request, so
+    //    without a limit it's both an xAI cost amplifier and a
     //    GitHub API quota drain (Finding 21).
     const ip = extractClientIp(request);
     const rl = await rateLimit(`github-analyze:${ip}`, 5);

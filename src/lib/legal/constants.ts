@@ -5,10 +5,7 @@
  * Future updates touch this file only. All constants are exported
  * `as const` so TypeScript narrows their literal types and downstream
  * `.map()` callers get strict typing.
- *
- * NOTE: `LIMITED_USE_DISCLOSURE` is load-bearing for Google OAuth
- * verification — Google reviewers grep for this exact string. Do NOT
- * paraphrase it.
+
  */
 
 // ────────────────────────────────────────────────────────────────────
@@ -27,84 +24,7 @@ export const GOVERNING_LAW = "India" as const;
 export const GOVERNING_LAW_STATEMENT =
   "These Terms are governed by the laws of India. Any disputes arising out of or relating to the Service or these Terms are subject to the exclusive jurisdiction of the courts of India." as const;
 
-// ────────────────────────────────────────────────────────────────────
-// Google API Services User Data Policy — Limited Use
-// ────────────────────────────────────────────────────────────────────
 
-/**
- * Verbatim Google API Services User Data Policy "Limited Use"
- * disclosure. Google verification reviewers search for this exact
- * sentence; do NOT edit it.
- */
-export const LIMITED_USE_DISCLOSURE =
-  "Openso's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements." as const;
-
-export const LIMITED_USE_POLICY_URL =
-  "https://developers.google.com/terms/api-services-user-data-policy" as const;
-
-// ────────────────────────────────────────────────────────────────────
-// Google OAuth scopes
-// ────────────────────────────────────────────────────────────────────
-
-export type GoogleScope = {
-  /** Full scope URL as Google verification reviewers paste it. */
-  identifier: string;
-  /** Short label for table headers and TOC. */
-  label: string;
-  /** User-facing feature that requires this scope. */
-  feature: string;
-  /** Why a narrower scope is insufficient. */
-  justification: string;
-  /** True for Restricted Scopes under the Google API Services User Data Policy. */
-  restricted: boolean;
-};
-
-export const GOOGLE_SCOPES: readonly GoogleScope[] = [
-  {
-    identifier: "https://www.googleapis.com/auth/gmail.readonly",
-    label: "gmail.readonly",
-    feature:
-      "Gmail summarization in the dashboard and the daily-digest workflow.",
-    justification:
-      "Summarization requires reading message bodies and headers across the user's inbox; metadata-only scopes do not expose message content.",
-    restricted: true,
-  },
-  {
-    identifier: "https://www.googleapis.com/auth/gmail.send",
-    label: "gmail.send",
-    feature:
-      "Optional reply drafts that the user explicitly chooses to send from Openso.",
-    justification:
-      "Sending a drafted reply on the user's behalf cannot be performed under gmail.compose because that scope only creates drafts; sending requires gmail.send.",
-    restricted: true,
-  },
-  {
-    identifier: "https://www.googleapis.com/auth/gmail.modify",
-    label: "gmail.modify",
-    feature:
-      "Marking summarized threads as read and applying user-chosen labels.",
-    justification:
-      "Modifying labels and read state on existing threads is not permitted under gmail.readonly; gmail.metadata cannot mutate state.",
-    restricted: true,
-  },
-  {
-    identifier: "https://www.googleapis.com/auth/userinfo.email",
-    label: "userinfo.email",
-    feature:
-      "Identifying the authenticated user by email for account creation and lookup.",
-    justification:
-      "OpenID Connect requires this scope to populate the email claim used as the primary account identifier.",
-    restricted: false,
-  },
-  {
-    identifier: "https://www.googleapis.com/auth/userinfo.profile",
-    label: "userinfo.profile",
-    feature: "Displaying the user's name and avatar in the Openso UI.",
-    justification:
-      "Profile name and picture claims are only available under userinfo.profile; there is no narrower alternative.",
-    restricted: false,
-  },
-] as const;
 
 // ────────────────────────────────────────────────────────────────────
 // GitHub OAuth scopes
@@ -162,16 +82,15 @@ export type SubProcessor = {
 
 export const SUB_PROCESSORS: readonly SubProcessor[] = [
   {
-    name: "Pioneer AI",
+    name: "xAI",
     purpose:
-      "Hosting AI inference for chat, recruiter chatbot, summarization, and structured extraction workloads.",
+      "Hosting AI inference for chat, recruiter chatbot, developer profile synthesis, and structured extraction workloads.",
     dataCategories: [
       "Account identifiers",
       "Prompts and AI outputs",
-      "Gmail message metadata and content (for summarization only)",
     ],
     region: "United States",
-    privacyPolicyUrl: "https://pioneer.ai/privacy",
+    privacyPolicyUrl: "https://x.ai/privacy",
   },
   {
     name: "GitHub",
@@ -193,7 +112,6 @@ export const SUB_PROCESSORS: readonly SubProcessor[] = [
       "Account identifiers",
       "Encrypted OAuth tokens",
       "Resume files and parsed text",
-      "Job application activity",
     ],
     region: "Provider-managed cloud regions",
     privacyPolicyUrl: "https://insforge.dev/privacy",
@@ -250,18 +168,13 @@ export type ProcessingPurpose = {
 
 export const PROCESSING_PURPOSES: readonly ProcessingPurpose[] = [
   {
-    purpose: "Authenticating users via Google or GitHub OAuth.",
+    purpose: "Authenticating users via GitHub OAuth.",
     legalBasis: "performance of a contract",
   },
   {
     purpose:
-      "Operating product features (chat, repo agent, recruiter chatbot, job feed).",
+      "Operating product features (chat, repo agent, recruiter chatbot).",
     legalBasis: "performance of a contract",
-  },
-  {
-    purpose:
-      "Generating AI outputs from Gmail content, repository content, and resumes under Restricted Scopes.",
-    legalBasis: "consent",
   },
   {
     purpose:
@@ -311,7 +224,7 @@ export const DATA_CATEGORIES: readonly DataCategory[] = [
     id: "account-identifiers",
     label: "Account identifiers",
     description:
-      "Email address, display name, profile image URL, and provider user id retrieved from your Google or GitHub OAuth profile when you sign in.",
+      "Email address, display name, profile image URL, and provider user id retrieved from your GitHub OAuth profile when you sign in.",
     source: "third-party (with consent)",
     ccpaCategory: "(A) Identifiers",
   },
@@ -332,15 +245,7 @@ export const DATA_CATEGORIES: readonly DataCategory[] = [
     ccpaCategory:
       "(F) Internet or other electronic network activity information",
   },
-  {
-    id: "gmail-data",
-    label: "Gmail message metadata and content",
-    description:
-      "Headers, snippets, labels, and message bodies accessed under user-granted Gmail Restricted Scope tokens, used solely to generate the requested summaries.",
-    source: "third-party (with consent)",
-    ccpaCategory:
-      "(F) Internet or other electronic network activity information",
-  },
+
   {
     id: "telegram-data",
     label: "Telegram chat identifiers and messages",
@@ -358,14 +263,7 @@ export const DATA_CATEGORIES: readonly DataCategory[] = [
     ccpaCategory:
       "(F) Internet or other electronic network activity information",
   },
-  {
-    id: "job-application-activity",
-    label: "Job application activity",
-    description:
-      "Job listings you save or apply to, application status notes, and the aggregated job board sources you have configured.",
-    source: "provided directly",
-    ccpaCategory: "(I) Professional or employment-related information",
-  },
+
   {
     id: "ai-prompts-and-outputs",
     label: "AI prompts and outputs",

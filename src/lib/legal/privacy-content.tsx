@@ -1,7 +1,5 @@
 import {
   LEGAL_CONTACT_EMAIL,
-  LIMITED_USE_DISCLOSURE,
-  LIMITED_USE_POLICY_URL,
 } from "./constants";
 
 import { CcpaCategoryTable } from "@/components/legal/ccpa-category-table";
@@ -26,7 +24,7 @@ export const PRIVACY_SECTIONS: LegalSectionNode[] = [
         <ul className="list-disc space-y-2 pl-6">
           <li>
             <strong>Account identifiers</strong> — Email address, display name,
-            profile image URL, and provider user id retrieved from your Google or
+            profile image URL, and provider user id retrieved from your
             GitHub OAuth profile when you sign in.{" "}
             <em className="text-muted-foreground">
               (Third-party, with consent)
@@ -47,15 +45,7 @@ export const PRIVACY_SECTIONS: LegalSectionNode[] = [
               (Third-party, with consent)
             </em>
           </li>
-          <li>
-            <strong>Gmail message metadata and content</strong> — Headers,
-            snippets, labels, and message bodies accessed under user-granted
-            Gmail Restricted Scope tokens, used solely to generate the requested
-            summaries.{" "}
-            <em className="text-muted-foreground">
-              (Third-party, with consent)
-            </em>
-          </li>
+
           <li>
             <strong>Telegram chat identifiers and messages</strong> — The
             Telegram chat id you connect to Openso and the messages you exchange
@@ -68,12 +58,7 @@ export const PRIVACY_SECTIONS: LegalSectionNode[] = [
             and the chatbot&apos;s responses about you.{" "}
             <em className="text-muted-foreground">(Provided directly)</em>
           </li>
-          <li>
-            <strong>Job application activity</strong> — Job listings you save or
-            apply to, application status notes, and the aggregated job board
-            sources you have configured.{" "}
-            <em className="text-muted-foreground">(Provided directly)</em>
-          </li>
+
           <li>
             <strong>AI prompts and outputs</strong> — The prompts you send to AI
             features and the outputs those features generate, including
@@ -102,28 +87,7 @@ export const PRIVACY_SECTIONS: LegalSectionNode[] = [
       </p>
     ),
     subsections: [
-      {
-        id: "google-oauth-scopes",
-        heading: "Google OAuth Scopes",
-        body: (
-          <>
-            <p>
-              The following Google OAuth scopes are requested. Scopes marked
-              &ldquo;Restricted&rdquo; are subject to the{" "}
-              <a
-                href={LIMITED_USE_POLICY_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-foreground"
-              >
-                Google API Services User Data Policy
-              </a>
-              .
-            </p>
-            <OAuthScopeList provider="google" />
-          </>
-        ),
-      },
+
       {
         id: "github-oauth-scopes",
         heading: "GitHub OAuth Scopes",
@@ -133,51 +97,13 @@ export const PRIVACY_SECTIONS: LegalSectionNode[] = [
               The following GitHub OAuth scopes are requested for repository
               access, issue access, and pull request creation:
             </p>
-            <OAuthScopeList provider="github" />
+            <OAuthScopeList />
           </>
         ),
       },
     ],
   },
-  {
-    id: "limited-use",
-    heading: "Google API Services User Data Policy — Limited Use",
-    body: (
-      <>
-        <p>{LIMITED_USE_DISCLOSURE}</p>
-        <p>
-          For more information, see the{" "}
-          <a
-            href={LIMITED_USE_POLICY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-foreground"
-          >
-            Google API Services User Data Policy
-          </a>
-          .
-        </p>
-        <p>Specifically, Openso:</p>
-        <ul className="list-disc space-y-1 pl-6">
-          <li>
-            Does not transfer Gmail data to third parties except as necessary to
-            provide the user-facing summarization feature, with prior user
-            consent, to comply with applicable law, or as part of a merger or
-            acquisition where the acquirer is bound to the same Limited Use
-            terms.
-          </li>
-          <li>Does not use Gmail data for serving advertisements.</li>
-          <li>
-            Does not allow humans to read Gmail data except with the user&apos;s
-            affirmative consent for specific messages, when necessary for
-            security purposes such as investigating abuse, to comply with
-            applicable law, or for Openso&apos;s internal operations where the
-            data has been aggregated and anonymized.
-          </li>
-        </ul>
-      </>
-    ),
-  },
+
   {
     id: "how-we-use-your-information",
     heading: "How We Use Your Information",
@@ -189,10 +115,6 @@ export const PRIVACY_SECTIONS: LegalSectionNode[] = [
           legitimate interests, we describe the specific interest.
         </p>
         <ProcessingPurposeTable />
-        <p className="text-sm text-muted-foreground">
-          Where Openso processes data under Restricted Scopes (Gmail), the legal
-          basis is the user&apos;s explicit consent granted at OAuth time.
-        </p>
       </>
     ),
   },
@@ -236,11 +158,7 @@ export const PRIVACY_SECTIONS: LegalSectionNode[] = [
             repository connection is active. Removed when you disconnect the
             repository or delete your account.
           </li>
-          <li>
-            <strong>Gmail message content</strong> — Processed for summarization
-            and not stored beyond the time required to generate and deliver the
-            summary, except for derived summaries that you explicitly save.
-          </li>
+
           <li>
             <strong>Telegram data</strong> — Retained while the Telegram bot
             connection is active. Removed when you disconnect or delete your
@@ -250,10 +168,7 @@ export const PRIVACY_SECTIONS: LegalSectionNode[] = [
             <strong>Recruiter chatbot transcripts</strong> — Retained for the
             lifetime of your account.
           </li>
-          <li>
-            <strong>Job application activity</strong> — Retained for the lifetime
-            of your account.
-          </li>
+
           <li>
             <strong>AI prompts and outputs</strong> — Retained for the lifetime
             of your account unless you delete individual conversations.

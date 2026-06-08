@@ -14,7 +14,7 @@ import { z } from "zod";
 
 import { fetchReadme, getGitHubToken } from "./github-client";
 
-import { google } from "@/lib/ai/google-provider";
+import { google, getDefaultPioneerModel } from "@/lib/ai/google-provider";
 import { createAdminClient } from "@/lib/insforge/admin";
 import { embed } from "@/lib/memory/embeddings";
 
@@ -313,7 +313,7 @@ Most recent push: ${repos[0]?.pushed_at ?? "unknown"}`,
 
     // Store each section
     let stored = 0;
-    const modelName = process.env.PIONEER_MODEL || "deepseek-ai/DeepSeek-V4-Flash";
+    const modelName = process.env.PIONEER_MODEL || getDefaultPioneerModel();
     for (const section of NARRATIVE_SECTIONS) {
       const content = object[section];
       if (!content || content.length < 10) continue;

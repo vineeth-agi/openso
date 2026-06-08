@@ -1,14 +1,14 @@
 /**
  * AI Module — Main Entry Point
  *
- * Chat / Text generation: Pioneer AI (OpenAI-compatible, DeepSeek V4 Flash)
+ * Chat / Text generation: xAI (OpenAI-compatible, Grok 4.20 Non-Reasoning)
  * Embeddings:             Voyage AI (see @/lib/memory/embeddings)
  */
 
 // Vercel AI SDK primitives
 export { generateText, generateObject, streamText } from "ai";
 
-// Pioneer-backed model factory (exported as `google` for backward compat)
+// xAI-backed model factory (exported as `google` for backward compat)
 export {
   google,
   default as defaultProvider,
@@ -29,8 +29,11 @@ export type { ModelSpec, TaskCategory, CostTier, ModelProvider } from "./model-r
 export { classifyQuery } from "./query-classifier";
 export type { QueryClassification } from "./query-classifier";
 
-// Configuration utilities
-export { getPioneerConfigSummary, getPioneerConfig } from "./pioneer-config";
+// Configuration utilities (aliased for compatibility)
+export {
+  getXAIConfigSummary as getPioneerConfigSummary,
+  getXAIConfig as getPioneerConfig,
+} from "./xai-config";
 
 // Telemetry & Observability
 export {

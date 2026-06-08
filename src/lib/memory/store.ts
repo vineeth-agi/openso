@@ -136,7 +136,7 @@ export async function addFact(
     // "extend" or "unrelated" → insert as new fact
   }
 
-  // Insert new fact with brain-inspired fields
+  // Insert new fact with emotional and half-life fields
   const emotionalIntensity = extracted.emotionalIntensity ?? 0;
   const importanceBoost = computeEmotionalImportanceBoost(emotionalIntensity);
   const halfLife = computeInitialHalfLife(

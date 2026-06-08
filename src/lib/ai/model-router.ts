@@ -31,7 +31,7 @@
  *   │  streamText   │  Vercel AI SDK
  *   └──────────────┘
  *
- * Provider: Pioneer AI (OpenAI-compatible, DeepSeek V4 Flash).
+ * Provider: xAI (OpenAI-compatible, Grok 4.20 Non-Reasoning).
  */
 
 import type { LanguageModelV3 } from "@ai-sdk/provider";
@@ -258,7 +258,7 @@ async function tryFallbacksStream(
 
 /**
  * Creates a wrapped language model with retry + fallback chain.
- * Routes through Pioneer AI (OpenAI-compatible) provider.
+ * Routes through xAI (OpenAI-compatible) provider.
  */
 function createSmartModel(
   primaryModelId: string,
@@ -323,13 +323,13 @@ export function classifyAndRoute(
   );
 
   // ── Route based on classification ──
-  // With Pioneer, we primarily use DeepSeek V4 Flash for everything
+  // With xAI, we primarily use Grok 4.20 Non-Reasoning for everything
   let primarySpec: ModelSpec;
 
   if (classification.isMultimodal && !hasAttachments) {
     primarySpec = getBestModelForTask("moderate", maxCostTier);
   } else if (classification.isMultimodal && hasAttachments) {
-    // DeepSeek doesn't support multimodal — fall back to text-based handling
+    // Grok doesn't support multimodal — fall back to text-based handling
     primarySpec = getBestModelForTask("moderate", maxCostTier);
   } else {
     primarySpec = getBestModelForTask(classification.category, maxCostTier);

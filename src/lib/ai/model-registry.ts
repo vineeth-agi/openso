@@ -1,10 +1,10 @@
 /**
- * Model Registry — Single source of truth for all available Pioneer AI models.
+ * Model Registry — Single source of truth for all available xAI Grok models.
  *
- * Primary model: DeepSeek V4 Flash (284B MoE, 13B active, 1M context).
- * Fallback: DeepSeek V3.1 (163K context).
+ * Primary model: Grok 4.20 Non-Reasoning (128K context, fast + cost-efficient).
+ * Alternative models: Grok 4.3, Grok 4.20 Reasoning.
  *
- * Provider: Pioneer AI (OpenAI-compatible endpoint at api.pioneer.ai/v1).
+ * Provider: xAI (OpenAI-compatible endpoint at api.x.ai/v1).
  */
 
 // ── Task Categories ──
@@ -22,7 +22,7 @@ export type TaskCategory =
 export type CostTier = "free" | "low" | "medium" | "high" | "premium";
 
 // ── Model Provider ──
-export type ModelProvider = "pioneer";
+export type ModelProvider = "xai";
 
 // ── Model Definition ──
 export interface ModelSpec {
@@ -33,7 +33,7 @@ export interface ModelSpec {
   /** Human-friendly display name */
   name: string;
   /** Model family */
-  family: "deepseek-v4" | "deepseek-v3";
+  family: "grok-4";
   /** Is this a GA (stable) model? */
   stable: boolean;
   /** Maximum input context window (tokens) */
@@ -68,59 +68,22 @@ export interface ModelSpec {
   taskScores: Record<TaskCategory, number>;
 }
 
-// ── Pioneer AI models ──
+// ── xAI Grok models ──
 export const MODEL_REGISTRY: Record<string, ModelSpec> = {
 
   // ═══════════════════════════════════════════════════════════
-  //  DeepSeek V4 Flash — Primary model (Pioneer AI)
-  //  284B MoE, 13B active params, 1M context window
+  //  Grok 4.20 Non-Reasoning — Primary model (xAI)
+  //  Fast, OpenAI-compatible, 128K context window
   // ═══════════════════════════════════════════════════════════
 
-  "deepseek-ai/DeepSeek-V4-Flash": {
-    provider: "pioneer",
-    id: "deepseek-ai/DeepSeek-V4-Flash",
-    name: "DeepSeek V4 Flash",
-    family: "deepseek-v4",
+  "grok-4.20-0309-non-reasoning": {
+    provider: "xai",
+    id: "grok-4.20-0309-non-reasoning",
+    name: "Grok 4.20 Non-Reasoning",
+    family: "grok-4",
     stable: true,
-    maxInputTokens: 1_000_000,
-    maxOutputTokens: 8192,
-    supportsTools: true,
-    supportsStructuredOutput: true,
-    supportsThinking: true,
-    supportsImageInput: false,
-    supportsAudioInput: false,
-    supportsVideoInput: false,
-    supportsImageOutput: false,
-    costTier: "low",
-    defaultRPM: 300,
-    defaultTPM: 1_000_000,
-    latencyScore: 2,
-    qualityScore: 4,
-    taskScores: {
-      simple: 0.9,
-      moderate: 0.95,
-      complex: 0.85,
-      creative: 0.8,
-      code: 0.95,
-      research: 0.8,
-      structured: 0.9,
-      multimodal: 0.1,
-    },
-  },
-
-  // ═══════════════════════════════════════════════════════════
-  //  DeepSeek V3.1 — Fallback model (Pioneer AI)
-  //  163K context window, general-purpose
-  // ═══════════════════════════════════════════════════════════
-
-  "deepseek-ai/DeepSeek-V3.1": {
-    provider: "pioneer",
-    id: "deepseek-ai/DeepSeek-V3.1",
-    name: "DeepSeek V3.1",
-    family: "deepseek-v3",
-    stable: true,
-    maxInputTokens: 163_000,
-    maxOutputTokens: 8192,
+    maxInputTokens: 128_000,
+    maxOutputTokens: 4096,
     supportsTools: true,
     supportsStructuredOutput: true,
     supportsThinking: false,
@@ -129,18 +92,92 @@ export const MODEL_REGISTRY: Record<string, ModelSpec> = {
     supportsVideoInput: false,
     supportsImageOutput: false,
     costTier: "low",
-    defaultRPM: 200,
-    defaultTPM: 500_000,
-    latencyScore: 3,
-    qualityScore: 3,
+    defaultRPM: 120,
+    defaultTPM: 100_000,
+    latencyScore: 1,
+    qualityScore: 4,
+    taskScores: {
+      simple: 0.95,
+      moderate: 0.95,
+      complex: 0.85,
+      creative: 0.8,
+      code: 0.9,
+      research: 0.8,
+      structured: 0.95,
+      multimodal: 0.0,
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  //  Grok 4.3 — Alternative model (xAI)
+  //  Balanced intelligence and latency
+  // ═══════════════════════════════════════════════════════════
+
+  "grok-4.3": {
+    provider: "xai",
+    id: "grok-4.3",
+    name: "Grok 4.3",
+    family: "grok-4",
+    stable: true,
+    maxInputTokens: 128_000,
+    maxOutputTokens: 4096,
+    supportsTools: true,
+    supportsStructuredOutput: true,
+    supportsThinking: false,
+    supportsImageInput: false,
+    supportsAudioInput: false,
+    supportsVideoInput: false,
+    supportsImageOutput: false,
+    costTier: "medium",
+    defaultRPM: 120,
+    defaultTPM: 100_000,
+    latencyScore: 2,
+    qualityScore: 5,
+    taskScores: {
+      simple: 0.9,
+      moderate: 0.95,
+      complex: 0.9,
+      creative: 0.9,
+      code: 0.95,
+      research: 0.9,
+      structured: 0.95,
+      multimodal: 0.0,
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  //  Grok 4.20 Reasoning — Thinking model (xAI)
+  //  Advanced logic and chain-of-thought
+  // ═══════════════════════════════════════════════════════════
+
+  "grok-4.20-0309-reasoning": {
+    provider: "xai",
+    id: "grok-4.20-0309-reasoning",
+    name: "Grok 4.20 Reasoning",
+    family: "grok-4",
+    stable: true,
+    maxInputTokens: 128_000,
+    maxOutputTokens: 8192,
+    supportsTools: true,
+    supportsStructuredOutput: true,
+    supportsThinking: true,
+    supportsImageInput: false,
+    supportsAudioInput: false,
+    supportsVideoInput: false,
+    supportsImageOutput: false,
+    costTier: "high",
+    defaultRPM: 60,
+    defaultTPM: 50_000,
+    latencyScore: 4,
+    qualityScore: 5,
     taskScores: {
       simple: 0.8,
-      moderate: 0.85,
-      complex: 0.7,
-      creative: 0.7,
-      code: 0.8,
-      research: 0.65,
-      structured: 0.8,
+      moderate: 0.9,
+      complex: 0.98,
+      creative: 0.85,
+      code: 0.98,
+      research: 0.98,
+      structured: 0.95,
       multimodal: 0.0,
     },
   },
@@ -152,7 +189,7 @@ export const MODEL_REGISTRY: Record<string, ModelSpec> = {
 export const ALL_MODEL_IDS = Object.keys(MODEL_REGISTRY);
 
 /** Default primary model */
-export const DEFAULT_MODEL_ID = "deepseek-ai/DeepSeek-V4-Flash";
+export const DEFAULT_MODEL_ID = "grok-4.20-0309-non-reasoning";
 
 /** Get a model spec by ID, returns undefined if not found */
 export function getModelSpec(modelId: string): ModelSpec | undefined {

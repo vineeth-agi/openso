@@ -44,7 +44,7 @@ import { cn } from "@/lib/utils";
 
 // ── App Definitions ──
 
-type ProviderSlug = "gmail" | "github";
+type ProviderSlug = "github";
 
 interface AppDef {
   provider: ProviderSlug;
@@ -60,17 +60,6 @@ interface AppDef {
 }
 
 const APPS: AppDef[] = [
-  {
-    provider: "gmail",
-    name: "Gmail",
-    tagline: "Read, send & manage email",
-    description: "Let Jarvis read your inbox, draft replies, search threads and send emails on your behalf.",
-    icon: "/connectors/gmail.svg",
-    color: "#EA4335",
-    gradient: "from-red-500/20 to-orange-500/10",
-    oauthHref: "/api/auth/google?provider=gmail",
-    scopes: ["Read", "Send", "Modify"],
-  },
   {
     provider: "github",
     name: "GitHub",

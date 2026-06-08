@@ -1,0 +1,39 @@
+[auth]
+allowed_redirect_urls = [
+  "https://www.openso.dev/**",
+  "https://www.openso.dev",
+  "https://www.openso.dev/auth/callback?*",
+  "https://www.openso.dev/auth/callback",
+  "https://local.nextscale.in/**",
+  "https://local.nextscale.in/auth/callback?*",
+  "https://local.nextscale.in/auth/callback"
+]
+require_email_verification = true
+verify_email_method = "code"
+reset_password_method = "code"
+disable_signup = false
+
+[auth.password]
+min_length = 6
+require_number = false
+require_lowercase = false
+require_uppercase = false
+require_special_char = false
+
+[auth.smtp]
+enabled = false
+host = ""
+port = 465
+username = ""
+sender_email = ""
+sender_name = ""
+min_interval_seconds = 60
+
+[storage]
+max_file_size_mb = 50
+
+[realtime]
+retention_days = 0
+
+[schedules]
+retention_days = 7

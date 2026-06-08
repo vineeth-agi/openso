@@ -75,8 +75,8 @@ export async function GET(request: Request) {
   });
 
   const client = createInsforgeClient({
-    baseUrl: process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
-    anonKey: process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
+    baseUrl: process.env.INSFORGE_BASE_URL!,
+    anonKey: process.env.INSFORGE_ANON_KEY!,
     isServerMode: true,
   } as Parameters<typeof createInsforgeClient>[0]);
 

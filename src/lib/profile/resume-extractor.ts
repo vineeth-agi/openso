@@ -13,7 +13,7 @@
 import { generateObject } from "ai";
 import { z } from "zod";
 
-import { google } from "@/lib/ai/google-provider";
+import { google, getDefaultPioneerModel } from "@/lib/ai/google-provider";
 import { createAdminClient } from "@/lib/insforge/admin";
 import { addFactsBatch } from "@/lib/memory/store";
 
@@ -84,7 +84,7 @@ export type ResumeData = z.infer<typeof ResumeSchema>;
 // ── Extractor ───────────────────────────────────────────────
 
 function getModel() {
-  return google(process.env.PIONEER_MODEL || "deepseek-ai/DeepSeek-V4-Flash");
+  return google(process.env.PIONEER_MODEL || getDefaultPioneerModel());
 }
 
 const RESUME_EXTRACTION_PROMPT = `You are a resume parsing expert. Extract ALL information from this resume into the structured format.

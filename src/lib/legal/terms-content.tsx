@@ -47,14 +47,9 @@ export const TERMS_SECTIONS: LegalSectionNode[] = [
           <li>
             Resume-and-GitHub portfolio with a recruiter chatbot
           </li>
-          <li>
-            Aggregated job listings sourced from Y Combinator, Wellfound,
-            Greenhouse, Lever, Ashby, Workable, LinkedIn, Indeed, Remotive,
-            RemoteOK, and Arbeitnow
-          </li>
+
           <li>GitHub memory graph and repository insights</li>
           <li>Chat with any GitHub repository</li>
-          <li>Gmail summarization</li>
           <li>Telegram bot integration</li>
           <li>Resume upload supporting PDF, DOCX, and TXT files</li>
         </ul>
@@ -77,7 +72,7 @@ export const TERMS_SECTIONS: LegalSectionNode[] = [
     heading: "User Accounts",
     body: (
       <p>
-        Accounts are created via Google or GitHub OAuth. You are responsible for
+        Accounts are created via GitHub OAuth. You are responsible for
         maintaining the security of your authentication providers and for all
         activity that occurs under your account. You must notify us immediately
         at{" "}
@@ -106,10 +101,7 @@ export const TERMS_SECTIONS: LegalSectionNode[] = [
           </li>
           <li>Submit illegal, harmful, or offensive content</li>
           <li>Use the Service to send spam or unsolicited messages</li>
-          <li>
-            Scrape protected job boards in violation of those boards&apos; terms
-            of service
-          </li>
+
           <li>
             Use the Service to impersonate others or misrepresent your identity
           </li>

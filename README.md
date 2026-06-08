@@ -48,7 +48,7 @@ Access curated job listings tracked across top tech companies, filtered by your 
 Full-featured Telegram bot with the same capabilities as the web chat — including memory, tool use, rate limiting, and streaming responses. Connect your account and chat with your AI assistant on the go.
 
 ### 🔧 MCP Tool System
-Extensible tool system supporting the **Model Context Protocol (MCP)**. Connect external MCP servers to extend your AI assistant's capabilities with custom tools — from GitHub operations to Gmail management to scheduling.
+Extensible tool system supporting the **Model Context Protocol (MCP)**. Connect external MCP servers to extend your AI assistant's capabilities with custom tools — from GitHub operations to scheduling.
 
 ---
 
@@ -60,7 +60,7 @@ Extensible tool system supporting the **Model Context Protocol (MCP)**. Connect 
 | **Language** | [TypeScript](https://www.typescriptlang.org/) (strict mode) |
 | **Styling** | [Tailwind CSS 4](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) |
 | **Database & Auth** | [InsForge](https://insforge.dev/) (Postgres, Auth, Row-Level Security, Storage) |
-| **AI Models** | [Pioneer AI](https://pioneer.ai/) (DeepSeek V4 Flash) via [Vercel AI SDK](https://sdk.vercel.ai/) |
+| **AI Models** | [xAI](https://x.ai/) (Grok 4.20) via [Vercel AI SDK](https://sdk.vercel.ai/) |
 | **Embeddings** | [Voyage AI](https://www.voyageai.com/) (768d vectors + pgvector) |
 | **Caching & Rate Limiting** | [Upstash Redis](https://upstash.com/) |
 | **Background Jobs** | [Upstash Workflow](https://upstash.com/docs/qstash/workflow/gettingstarted) + [QStash](https://upstash.com/docs/qstash/whatisqstash) |

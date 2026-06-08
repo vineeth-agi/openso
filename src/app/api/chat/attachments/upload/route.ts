@@ -71,7 +71,7 @@ export async function POST(req: Request) {
 
     const publicUrl =
       (data as { url?: string } | null)?.url ??
-      `${process.env.NEXT_PUBLIC_INSFORGE_BASE_URL}/api/storage/buckets/chat_attachments/objects/${encodeURIComponent(key)}`;
+      `${process.env.INSFORGE_BASE_URL}/api/storage/buckets/chat_attachments/objects/${encodeURIComponent(key)}`;
 
     return NextResponse.json({
       url: publicUrl,

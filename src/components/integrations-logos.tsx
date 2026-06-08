@@ -1,6 +1,6 @@
 import {
 	UserIcon,
-	BriefcaseIcon,
+	SearchIcon,
 	CodeIcon,
 	BrainIcon,
 	StarIcon,
@@ -71,7 +71,7 @@ export function Integrations3() {
 const tiles: TileData[] = [
 	// Row 0
 	{ row: 0, col: 1, Icon: UserIcon, iconLabel: "Profile" },
-	{ row: 0, col: 3, Icon: BriefcaseIcon, iconLabel: "Jobs" },
+	{ row: 0, col: 3, Icon: SearchIcon, iconLabel: "Search" },
 
 	// Row 1
 	{ row: 1, col: 0 }, // Empty

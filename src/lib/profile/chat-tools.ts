@@ -20,7 +20,7 @@ import { createAdminClient } from "@/lib/insforge/admin";
 export function buildProfileTools(userId: string) {
   // ── Tool 1: checkProfileStatus ──────────────────────────
   const checkProfileStatus = tool({
-    description: "Check the user's profile readiness: whether resume is uploaded, GitHub is analyzed, and profile is synthesized. Use this to know what data is available for job matching.",
+    description: "Check the user's profile readiness: whether resume is uploaded, GitHub is analyzed, and profile is synthesized. Use this to know what data is available for profile synthesis.",
     inputSchema: z.object({}),
     execute: async () => {
       const db = createAdminClient();

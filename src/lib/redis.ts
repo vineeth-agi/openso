@@ -2,8 +2,7 @@
  * Upstash Redis client + small caching helpers.
  *
  * Used to cache read-heavy endpoints whose data is refreshed by background
- * QStash workflows (job board listings, open-source repos/issues, country
- * lists). The client is the REST-based `@upstash/redis` SDK so it works in
+ * QStash workflows (open-source repos/issues). The client is the REST-based `@upstash/redis` SDK so it works in
  * both Node and Edge runtimes.
  *
  * Graceful degradation: when `UPSTASH_REDIS_REST_URL` /
@@ -205,15 +204,6 @@ export const CACHE_KEYS = {
   /** Open-source actionable issues feed. Single global key — refreshed
    *  by the open-issues-sync workflow. */
   openSourceIssues: "os:issues:v1",
-
-  /** Distinct country list for the Job Board location filter. Single
-   *  global key — invalidated when listings are ingested. */
-  jobsCountries: "jobs:countries:v1",
-
-  /** Per-filter-combination cache for the Job Board listing endpoint.
-   *  Built via `stableQueryKey("jobs:list:v1", filters)`. Use this
-   *  prefix with `cacheDelByPattern` to wipe all variants. */
-  jobsListPrefix: "jobs:list:v1",
 } as const;
 
 // ── Per-user daily counter ─────────────────────────────────────────────

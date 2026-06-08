@@ -108,8 +108,6 @@ const sharedTools: NavGroup = {
     { label: "Create Portfolio", icon: LayoutTemplate, href: "/portfolio-settings" },
     { label: "Open Source Repos", icon: FolderGit2, href: "/open-source" },
     { label: "Find Issues", icon: Telescope, href: "/open-source-issues" },
-    { label: "Jobs", icon: Briefcase, href: "/jobs" },
-    { label: "Cron jobs", icon: Timer, href: "/cron-jobs" },
     { label: "Memory", icon: Brain, href: "/memory-brain" },
   ],
 };
@@ -743,13 +741,11 @@ export function DashboardShell({
   const isChat = pathname.startsWith("/chat");
   const isPortfolioSettings = pathname === "/portfolio-settings";
   const isConnectors = pathname === "/connectors";
-  const isJobs = pathname === "/jobs";
   const isOpenSource = pathname === "/open-source";
   const isOpenSourceIssues = pathname === "/open-source-issues";
   const isMemoryBrain = pathname === "/memory-brain";
-  const isCronJobs = pathname === "/cron-jobs";
   const isFullWidth = isChat || isPortfolioSettings;
-  const hideHeader = isFullWidth || isConnectors || isJobs || isOpenSource || isOpenSourceIssues || isMemoryBrain || isCronJobs;
+  const hideHeader = isFullWidth || isConnectors || isOpenSource || isOpenSourceIssues || isMemoryBrain;
 
   const breadcrumb = allBreadcrumbs[pathname] || {
     group: "Dashboard",

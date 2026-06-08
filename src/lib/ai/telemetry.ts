@@ -45,7 +45,7 @@ export function telemetryAttributes(params: {
   const attrs: Record<string, string | number | boolean> = {
     "ai.operation": operation,
     "ai.model.id": modelId,
-    "ai.model.provider": "pioneer",
+    "ai.model.provider": "xai",
   };
 
   if (userId) {
@@ -214,14 +214,11 @@ export function logAIOperationComplete(
 
 // ── Cost Tracking ──
 
-/** Rough cost per 1K tokens for Pioneer AI / DeepSeek models (USD, approximate) */
+/** Rough cost per 1K tokens for xAI / Grok models (USD, approximate) */
 const MODEL_COSTS: Record<string, { input: number; output: number }> = {
-  "deepseek-ai/DeepSeek-V4-Flash": { input: 0.00005, output: 0.0001 },
-  "deepseek-ai/DeepSeek-V3.1": { input: 0.00027, output: 0.0011 },
-  // Legacy Gemini IDs kept for backward compat in telemetry lookups
-  "gemini-2.5-pro": { input: 0.00125, output: 0.005 },
-  "gemini-2.5-flash": { input: 0.0003, output: 0.0006 },
-  "gemini-2.5-flash-lite": { input: 0.000075, output: 0.0003 },
+  "grok-4.20-0309-non-reasoning": { input: 0.002, output: 0.01 },
+  "grok-4.3": { input: 0.002, output: 0.01 },
+  "grok-4.20-0309-reasoning": { input: 0.002, output: 0.01 },
 };
 
 /**

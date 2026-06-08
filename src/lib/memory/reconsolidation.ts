@@ -1,11 +1,6 @@
 /**
  * Memory Reconsolidation — retrieved memories become labile (modifiable).
  *
- * In the brain: when a memory is retrieved, it enters a "labile" state
- * for a brief window. During this window, new context can modify, strengthen,
- * or weaken the original trace. This is how memories update over time without
- * explicit contradiction — gradual drift through reconsolidation.
- *
  * Implementation:
  * - After retrieval, facts enter a "reconsolidation window" (tracked by last_retrieved_at)
  * - During the next Dream Cycle, recently-retrieved facts are re-evaluated

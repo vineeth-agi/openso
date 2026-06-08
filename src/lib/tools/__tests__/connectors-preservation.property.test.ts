@@ -4,15 +4,14 @@
  * **Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.5, 3.6**
  *
  * These tests capture the baseline behavior of the retained connectors
- * (Gmail, GitHub, Resume, Telegram) on the UNFIXED code. They must PASS
+ * (GitHub, Resume, Telegram) on the UNFIXED code. They must PASS
  * both before and after the fix, confirming no regressions.
  *
  * Observation-first methodology:
- * - Gmail OAuth route returns correct redirect URL with gmail scopes
  * - GitHub OAuth route functions correctly (separate route, untouched)
- * - Connection management functions accept "gmail" and "github"
- * - fetchNativeAppTools correctly loads Gmail and GitHub tools
- * - Connectors page renders Gmail, GitHub, Resume, and Telegram cards
+ * - Connection management functions accept "github"
+ * - fetchNativeAppTools correctly loads GitHub tools
+ * - Connectors page renders GitHub, Resume, and Telegram cards
  */
 // @vitest-environment node
 import * as fc from "fast-check";
@@ -25,7 +24,7 @@ const PROJECT_ROOT = path.resolve(__dirname, "../../../../");
 /**
  * The set of valid/retained OAuth providers.
  */
-const VALID_PROVIDERS = ["gmail", "github"] as const;
+const VALID_PROVIDERS = ["github"] as const;
 type ValidProvider = (typeof VALID_PROVIDERS)[number];
 
 /**
@@ -41,7 +40,6 @@ const invalidProviderArb: fc.Arbitrary<string> = fc
   .string({ minLength: 1, maxLength: 30 })
   .filter(
     (s) =>
-      s !== "gmail" &&
       s !== "github" &&
       s !== "google_calendar" &&
       s !== "google_docs" &&
@@ -67,14 +65,14 @@ function pathExists(relativePath: string): boolean {
   return fs.existsSync(path.resolve(PROJECT_ROOT, relativePath));
 }
 
-describe("Preservation: Retained Connectors (Gmail, GitHub, Resume, Telegram) Unchanged", () => {
+describe("Preservation: Retained Connectors (GitHub, Resume, Telegram) Unchanged", () => {
   describe("Connection management functions accept valid providers", () => {
     it("Property 2: For all valid provider inputs, the Provider type includes them in connections.ts", () => {
       const connectionsContent = readFileContent("src/lib/connections.ts");
 
       fc.assert(
         fc.property(validProviderArb, (provider) => {
-          // The Provider type MUST include "gmail" and "github"
+          // The Provider type MUST include "github"
           const typeRegex = new RegExp(`["']${provider}["']`);
           const hasProvider = typeRegex.test(connectionsContent);
           expect(hasProvider).toBe(true);
@@ -117,7 +115,6 @@ describe("Preservation: Retained Connectors (Gmail, GitHub, Resume, Telegram) Un
 
     it("Property 2: For all valid provider inputs, native tool builder files exist", () => {
       const RETAINED_TOOL_FILES: Record<ValidProvider, string> = {
-        gmail: "src/lib/tools/native-tools/gmail.ts",
         github: "src/lib/tools/native-tools/github.ts",
       };
 
@@ -159,15 +156,15 @@ describe("Preservation: Retained Connectors (Gmail, GitHub, Resume, Telegram) Un
     });
   });
 
-  describe("APPS array contains Gmail and GitHub OAuth entries", () => {
-    it("Property 2: The APPS array contains entries for Gmail and GitHub", () => {
+  describe("APPS array contains GitHub OAuth entry", () => {
+    it("Property 2: The APPS array contains entry for GitHub", () => {
       const connectorsPageContent = readFileContent(
         "src/app/(site)/(dashboard)/connectors/page.tsx"
       );
 
       fc.assert(
         fc.property(validProviderArb, (provider) => {
-          // The APPS array MUST have a provider entry for gmail and github
+          // The APPS array MUST have a provider entry for github
           const providerEntryRegex = new RegExp(
             `provider:\\s*["']${provider}["']`
           );
@@ -178,7 +175,7 @@ describe("Preservation: Retained Connectors (Gmail, GitHub, Resume, Telegram) Un
       );
     });
 
-    it("Property 2: The APPS array currently contains at least 2 OAuth entries (Gmail, GitHub)", () => {
+    it("Property 2: The APPS array currently contains at least 1 OAuth entry (GitHub)", () => {
       const connectorsPageContent = readFileContent(
         "src/app/(site)/(dashboard)/connectors/page.tsx"
       );
@@ -188,14 +185,10 @@ describe("Preservation: Retained Connectors (Gmail, GitHub, Resume, Telegram) Un
         /provider:\s*["'][a-z_]+["']/g
       );
       expect(providerEntries).not.toBeNull();
-      // On unfixed code there are 8 entries; after fix there should be 2.
-      // The preservation property is: at LEAST 2 (Gmail + GitHub always present)
-      expect(providerEntries!.length).toBeGreaterThanOrEqual(2);
+      expect(providerEntries!.length).toBeGreaterThanOrEqual(1);
 
-      // Specifically verify Gmail and GitHub are among them
-      const gmailEntry = providerEntries!.some((e) => e.includes("gmail"));
+      // Specifically verify GitHub is among them
       const githubEntry = providerEntries!.some((e) => e.includes("github"));
-      expect(gmailEntry).toBe(true);
       expect(githubEntry).toBe(true);
     });
   });
@@ -220,44 +213,21 @@ describe("Preservation: Retained Connectors (Gmail, GitHub, Resume, Telegram) Un
         "src/app/(site)/(dashboard)/connectors/page.tsx"
       );
 
-      // The totalApps must be computed as APPS.length + 2 (or a fixed value of 4 after fix)
+      // The totalApps must be computed as APPS.length + 2 (or a fixed value of 3 after fix)
       // On unfixed code: APPS.length + 2 = 8 + 2 = 10
-      // After fix: APPS.length + 2 = 2 + 2 = 4
+      // After fix: APPS.length + 2 = 1 + 2 = 3
       // Preservation: the formula includes +2 for Resume and Telegram
       const hasTotalAppsCalc = /totalApps\s*=\s*APPS\.length\s*\+\s*2/.test(
         connectorsPageContent
       );
-      // After fix, it might be a literal 4 instead
-      const hasLiteralTotal = /totalApps\s*=\s*4/.test(connectorsPageContent);
+      // After fix, it might be a literal 3 instead
+      const hasLiteralTotal = /totalApps\s*=\s*3/.test(connectorsPageContent);
 
       expect(hasTotalAppsCalc || hasLiteralTotal).toBe(true);
     });
   });
 
-  describe("Gmail OAuth route preserves correct scopes", () => {
-    it("Property 2: Gmail OAuth route file exists and contains gmail scopes", () => {
-      const googleRouteContent = readFileContent(
-        "src/app/api/auth/google/route.ts"
-      );
 
-      // The Google OAuth route must exist
-      expect(googleRouteContent.length).toBeGreaterThan(0);
-
-      // It must contain gmail scopes
-      expect(googleRouteContent).toContain("gmail.readonly");
-      expect(googleRouteContent).toContain("gmail.send");
-      expect(googleRouteContent).toContain("gmail.modify");
-    });
-
-    it("Property 2: Gmail is a valid provider in the Google OAuth route", () => {
-      const googleRouteContent = readFileContent(
-        "src/app/api/auth/google/route.ts"
-      );
-
-      // The scopeMap must have a "gmail" key
-      expect(googleRouteContent).toMatch(/gmail:\s*\[/);
-    });
-  });
 
   describe("GitHub OAuth route is preserved", () => {
     it("Property 2: GitHub OAuth route file exists", () => {

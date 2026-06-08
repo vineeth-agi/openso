@@ -1,13 +1,13 @@
 import { GoogleGenerativeAI } from "@/lib/ai/generative-compat";
 
-function createPioneerModel() {
+function createXAIModel() {
   const genAI = new GoogleGenerativeAI();
-  const modelName = process.env.PIONEER_MODEL || "deepseek-ai/DeepSeek-V4-Flash";
+  const modelName = process.env.XAI_MODEL || "grok-4.20-0309-non-reasoning";
   return genAI.getGenerativeModel({ model: modelName });
 }
 
 export async function generateText(prompt: string): Promise<string> {
-  const model = createPioneerModel();
+  const model = createXAIModel();
   
   // Retry with exponential backoff (handles API 503/429 errors)
   let result;
@@ -21,7 +21,7 @@ export async function generateText(prompt: string): Promise<string> {
       const isRetryable = status === 503 || status === 429 || status === 500;
       if (attempt < MAX_RETRIES && isRetryable) {
         const delay = Math.pow(2, attempt) * 1000 + Math.random() * 500;
-        console.warn(`[pioneer-compat] Pioneer ${status}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`);
+        console.warn(`[xai-compat] xAI ${status}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${MAX_RETRIES})...`);
         await new Promise((r) => setTimeout(r, delay));
       } else {
         throw retryErr;
@@ -32,4 +32,3 @@ export async function generateText(prompt: string): Promise<string> {
   
   return result.response.text().trim();
 }
-

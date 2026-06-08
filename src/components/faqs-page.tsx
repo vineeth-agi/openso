@@ -68,19 +68,13 @@ const questions = [
 		id: "item-1",
 		title: "What is openso.dev?",
 		content:
-			"openso.dev is an AI-powered workspace designed for developers to supercharge their open-source journey and accelerate their careers. By indexing your real codebase contributions, we help you find perfect-fit open-source issues, auto-generate pull requests, create stunning interactive developer portfolios with recruiter chat, and get matched directly with top tech companies and YC startups.",
+			"openso.dev is an AI-powered workspace designed for developers to supercharge their open-source journey and accelerate their careers. By indexing your real codebase contributions, we help you find perfect-fit open-source issues, auto-generate pull requests, and create stunning interactive developer portfolios with recruiter chat.",
 	},
 	{
 		id: "item-2",
 		title: "How does the Open Source Issue Finder help me find issues?",
 		content:
 			"Our AI-powered Issue Finder analyzes your connected GitHub profile, core programming languages, and technical expertise to map you to the most relevant open-source issues. You can filter by difficulty (easy, medium, hard), category (bug, feature, documentation, test), estimated completion time, and maintainer responsiveness, ensuring you always work on high-value issues matching your skill set.",
-	},
-	{
-		id: "item-3",
-		title: "How does the Job Matching Engine connect me to opportunities?",
-		content:
-			"The Job Matching Engine matches your verified technical capabilities and contribution history from your GitHub memory graph with active career listings. We source roles directly from top tech companies and YC startups, connecting you to hiring teams who are looking for the exact skills, tech stacks, and domain expertise you've already demonstrated on Github.",
 	},
 	{
 		id: "item-4",
@@ -98,7 +92,7 @@ const questions = [
 		id: "item-6",
 		title: "Is openso.dev free to use?",
 		content:
-			"Yes, openso.dev is 100% free! You can connect your GitHub account, map your contributions, search for perfect-fit open-source issues, use our job matching board, and deploy your custom developer portfolio with the recruiter chatbot completely free of charge.",
+			"Yes, openso.dev is 100% free! You can connect your GitHub account, map your contributions, search for perfect-fit open-source issues, and deploy your custom developer portfolio with the recruiter chatbot completely free of charge.",
 	},
 	{
 		id: "item-7",

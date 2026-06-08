@@ -1,49 +1,11 @@
 import { generateObject } from "ai";
-import { google as googleapis } from "googleapis";
 import { z } from "zod";
 
 import { buildGithubTools } from "./native-tools/github";
-import { buildGmailTools } from "./native-tools/gmail";
 
 import { google } from "@/lib/ai/google-provider";
-import { getConnectionAdmin, refreshConnectionTokens } from "@/lib/connections";
+import { getConnectionAdmin } from "@/lib/connections";
 import type { Connection, Provider } from "@/lib/connections";
-
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? "";
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? "";
-
-const GOOGLE_PROVIDERS = new Set<string>(["gmail"]);
-
-/** Refresh an expired Google token and persist to DB. */
-async function getFreshGoogleToken(userId: string, conn: Connection): Promise<string | null> {
-  if (!conn.access_token) return null;
-  const isExpired = conn.expiry_date && Date.now() > conn.expiry_date - 60_000;
-  if (!isExpired) return conn.access_token;
-
-  if (!conn.refresh_token || !GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
-    console.warn(`[tool-router] Cannot refresh ${conn.provider}: missing refresh_token or credentials`);
-    return conn.access_token;
-  }
-
-  try {
-    const oauth2 = new googleapis.auth.OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
-    oauth2.setCredentials({ refresh_token: conn.refresh_token });
-    const { credentials } = await oauth2.refreshAccessToken();
-
-    // Persist via the encrypted-write helper (DB-HIGH-01) — never write the
-    // raw access_token column directly so encryption is non-skippable.
-    await refreshConnectionTokens(userId, conn.provider as Provider, {
-      access_token: credentials.access_token ?? null,
-      expiry_date: credentials.expiry_date ?? conn.expiry_date,
-    });
-
-    console.log(`[tool-router] Refreshed ${conn.provider} token for user`);
-    return credentials.access_token ?? conn.access_token;
-  } catch (err) {
-    console.error(`[tool-router] Token refresh failed for ${conn.provider}:`, err);
-    return conn.access_token;
-  }
-}
 
 interface ToolRouterOptions {
   queryText: string;
@@ -62,26 +24,24 @@ export async function routeUserIntent({ queryText, userId, connectedSlugs, conve
       needsReport: false,
       needsWebSearch: false,
       needsContribution: false,
-      needsJobBoardSearch: false,
       requiredConnectedApps: [],
     };
   }
 
-  // ALWAYS use the default Pioneer model (DeepSeek V4 Flash) for intent
+  // ALWAYS use the default model for intent
   // classification — it's a simple boolean routing task that must be fast.
-  const INTENT_MODEL = process.env.INTENT_ROUTER_MODEL || "deepseek-ai/DeepSeek-V4-Flash";
+  const INTENT_MODEL = process.env.INTENT_ROUTER_MODEL || "grok-4.20-0309-non-reasoning";
   const model = google(INTENT_MODEL);
   
   const schema = z.object({
     needsDaytona: z.boolean().describe("True if user needs to run python, bash, install dependencies, run scripts safely, test system outputs, or requires an isolated execution environment. Also true if user wants to OPEN A PR, fix a bug in a repo, contribute code changes, clone a repo and make edits, or anything that requires writing/modifying files in a codebase."),
-    needsMemory: z.boolean().describe("True if the user is asking to remember something, recall a past conversation, set a reminder, schedule a task, create a cron job, set up a recurring task, or anything related to scheduling/reminders/cron. Detect from: 'remind me', 'set a reminder', 'schedule', 'cron job', 'every day at', 'every morning', 'recurring', 'set up a task', 'check my mails daily', 'notify me at', 'list my tasks', 'what reminders do I have'."),
+    needsMemory: z.boolean().describe("True if the user is asking to remember something, recall a past conversation, get their profile, or forget a fact about them."),
     needsResearch: z.boolean().describe("True if asking for deep market research on a startup or concept."),
     needsDiagram: z.boolean().describe("True if asking to draw a diagram, UML, flowchart, or architecture."),
     needsReport: z.boolean().describe("True if user asks for a visual report, dashboard, chart, data visualization, comparison table, or when deep research results should be presented visually. Also true if user says 'show me a chart', 'visualize this', 'create a report', 'make a dashboard'."),
     needsWebSearch: z.boolean().describe("True if the user is asking about current events, needs to look something up online, asks 'what is X', 'latest news', 'search for', 'look up', 'find info about', wants real-time information, or the answer requires up-to-date internet knowledge. Also true if user shares a URL and wants it read/summarized."),
     needsContribution: z.boolean().describe("True if user wants to find open source issues, bugs, or tasks to contribute to or work on. Detect from: 'find issues', 'open source', 'contribute', 'good first issue', 'beginner issues', 'bugs to fix', 'help with projects', 'want to contribute', 'any issues I can work on', 'show me something to fix', 'i want to help', 'open PR', 'open source contribution', 'find me a bug', 'what can I work on', 'any open issues'. Also true for follow-up queries like 'show more', 'easier ones', 'Python only' if the previous message was about open source."),
-    needsJobBoardSearch: z.boolean().describe("True if user wants to find JOBS / careers / openings / hiring / roles at companies. Detect from: 'find me a job', 'jobs at <company>', 'remote jobs', 'senior backend roles', 'YC startup jobs', 'fintech engineer', 'who's hiring', 'careers at Stripe', 'tech jobs in India', 'AI/ML roles', 'data scientist openings'. ALSO true for follow-up queries like 'show more', 'remote only', 'with equity' if the previous message was about jobs. NOT the same as 'open source contribution' — that's needsContribution. If the user wants to PAID employment, use needsJobBoardSearch."),
-    requiredConnectedApps: z.array(z.string()).describe("A list of apps needed based ONLY on connected apps provided via instructions. Example: ['github', 'gmail']"),
+    requiredConnectedApps: z.array(z.string()).describe("A list of apps needed based ONLY on connected apps provided via instructions. Example: ['github']"),
   });
 
   try {
@@ -101,30 +61,7 @@ Look for contribution intent in phrases like:
 - "find good first issues"
 - "open source contributions"
 
-Look for JOB-BOARD intent (paid employment) in phrases like:
-- "find me a job"
-- "jobs at <company>"
-- "remote jobs"
-- "senior backend roles"
-- "YC startup jobs"
-- "AI/ML roles in San Francisco"
-- "who's hiring"
-- "careers at Stripe"
-- "data scientist openings"
-- "tech jobs in India"
 
-Look for SCHEDULING / CRON / REMINDER intent in phrases like:
-- "set a cron job"
-- "remind me every day at 9pm"
-- "schedule a recurring task"
-- "check my mails every morning"
-- "every Monday send me a summary"
-- "set a reminder for tomorrow"
-- "list my scheduled tasks"
-- "what cron jobs do I have"
-These should set needsMemory=true (scheduling tools live in memory tools).
-
-CRITICAL: distinguish needsContribution (unpaid open-source contributions) from needsJobBoardSearch (paid job openings). They are mutually exclusive 99% of the time.
 
 IMPORTANT: Consider the full conversation context when routing. Short follow-up messages like "all", "yes", "do it", "public" etc. should be interpreted in the context of the preceding conversation.
 ${conversationHistory ? `\nRecent conversation context:\n${conversationHistory}\n` : ""}
@@ -153,7 +90,6 @@ User's latest message: "${queryText}"
       needsReport: false,
       needsWebSearch: true,
       needsContribution: false,
-      needsJobBoardSearch: false,
       // Fallback: load tools for ALL connected apps so chat still works
       requiredConnectedApps: connectedSlugs,
     };
@@ -176,15 +112,10 @@ export async function fetchNativeAppTools(userId: string, requiredApps: string[]
         const conn = await getConnectionAdmin(userId, app as any);
         if (!conn?.access_token) return;
 
-        // For Google services, refresh token if expired
-        const token = GOOGLE_PROVIDERS.has(app)
-          ? (await getFreshGoogleToken(userId, conn)) ?? conn.access_token
-          : conn.access_token;
+        const token = conn.access_token;
 
         if (app === "github") {
           Object.assign(allTools, buildGithubTools(token, conn.github_username ?? undefined, userId));
-        } else if (app === "gmail") {
-          Object.assign(allTools, buildGmailTools(token));
         }
       }),
     );

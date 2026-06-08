@@ -25,7 +25,7 @@ import { createClient } from "@/lib/insforge/server";
 import { assertEncryptedOrNull, decryptToken, encryptToken } from "@/lib/security/token-crypto";
 
 // ── Types ──────────────────────────────────────────
-export type Provider = "github" | "gmail";
+export type Provider = "github";
 
 export interface Connection {
   id: string;
@@ -182,8 +182,7 @@ export async function upsertConnection(
 /**
  * Update the secret-bearing columns of an existing connection.
  *
- * Used by token-refresh paths (Google OAuth refresh in `gmail.ts` and
- * `tool-router.ts`) where we already have an active row and just need to
+ * Used by token-refresh paths (in `tool-router.ts`) where we already have an active row and just need to
  * rotate the access token / expiry. Unlike `upsertConnection`, this:
  *   - Does NOT bump `last_connected_at` (a refresh is not a reconnect —
  *     reconnect-during-run detection in the GitHub ingestion runner relies

@@ -1,7 +1,7 @@
 /**
  * Application-layer token encryption with key rotation (Findings 22, 7.5; audit DB-03).
  *
- * GitHub / Gmail / Telegram tokens were previously stored as plaintext in DB
+ * GitHub / Telegram tokens were previously stored as plaintext in DB
  * columns. The volume is encrypted at rest, but logically extracted data
  * (lost backup, leaked service-role key, SQL injection elsewhere) exposed
  * every connected account. This module wraps each token with AES-256-GCM
@@ -67,7 +67,7 @@
  *   2. Set `TOKEN_ENC_ACTIVE_KEY_ID=k2` and deploy. New writes are now
  *      `enc:v2:k2:`; all older rows still decrypt.
  *   3. Run a backfill job that calls `reencryptToken(value)` over every
- *      encrypted column — `connected_apps` (GitHub/Gmail/Telegram tokens)
+ *      encrypted column — `connected_apps` (GitHub/Telegram tokens)
  *      plus any other encrypted columns — re-encrypting each row onto the
  *      active key.
  *   4. Once the backfill reports zero rows remaining on the old key, retire

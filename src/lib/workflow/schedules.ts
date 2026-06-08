@@ -81,6 +81,4 @@ export const WORKFLOW_SCHEDULES: WorkflowScheduleConfig[] = [
     description:
       "Daily cleanup of expired oauth_states rows at 05:00 UTC (audit Finding 4.5).",
   },
-  // task-runner is managed on-demand by src/lib/workflow/task-runner-schedule.ts
-  // It's created when the first cron job is enabled and removed when the last is disabled/deleted.
 ];

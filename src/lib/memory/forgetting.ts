@@ -1,11 +1,5 @@
 /**
- * Ebbinghaus-style Forgetting Curve — neuroscience-based memory decay.
- *
- * Key principles from the human brain:
- * - LTP (Long-Term Potentiation): repeated retrieval strengthens memory
- * - LTD (Long-Term Depression): unused memories weaken over time
- * - Spaced Repetition: each retrieval resets the decay curve and extends half-life
- * - CaMKII/PP1 push-pull: balance between remembering and forgetting
+ * Ebbinghaus-style Forgetting Curve — decay logic.
  *
  * Formula: strength = e^(-elapsed_days / halfLifeDays) * retrieval_boost
  * retrieval_boost = 1 + 0.1 * ln(retrieval_count + 1)
@@ -58,7 +52,6 @@ function computeMemoryStrength(input: MemoryStrengthInput): number {
 
 /**
  * Determine the appropriate half-life for a new fact based on its properties.
- * Mirrors how the brain assigns different durabilities:
  * - Identity facts (name, location): very long half-life (like critical observations)
  * - Episodic memories: short half-life unless emotional
  * - Preferences: medium, strengthened by repetition
@@ -101,8 +94,6 @@ export function computeInitialHalfLife(
 
 /**
  * Check if a fact has effectively been "forgotten" (strength below threshold).
- * In the brain: when synaptic strength drops below a threshold, the trace
- * is no longer recoverable without external re-encoding.
  */
 export function isEffectivelyForgotten(
   input: MemoryStrengthInput,

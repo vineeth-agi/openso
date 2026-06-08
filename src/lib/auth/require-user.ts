@@ -20,9 +20,9 @@ import { getAuthUser } from "@/lib/insforge/server";
  * a table whose `user_id` foreign-keys to `profiles(id)` —
  * `connected_apps`, `chat_session_summaries`, `agent_cron_jobs`,
  * `conversations`, etc. — fails with a 23503 foreign_key_violation.
- * The Gmail OAuth callback is a textbook case: token exchange
+ * The GitHub OAuth callback is a textbook case: token exchange
  * succeeds, then `upsertConnection` blows up on the FK and the
- * user lands on `/connectors?error=google_callback_failed`.
+ * user lands on `/connectors?error=github_callback_failed`.
  *
  * ## What this does
  *
@@ -61,9 +61,7 @@ export async function requireUser(): Promise<{
   const user = auth.user;
 
   // InsForge stores OAuth metadata in `user.profile` (jsonb on
-  // `auth.users`). Different providers populate it under different
-  // keys — Google uses `name` / `picture`, GitHub uses `name` /
-  // `avatar_url` / `login`. Probe both shapes.
+  // `auth.users`). Probe GitHub structure (name / avatar_url / login).
   const profile = (user as { profile?: Record<string, unknown> }).profile ?? {};
   const fullName =
     (profile.full_name as string | undefined) ??

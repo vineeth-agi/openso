@@ -1,7 +1,7 @@
 /**
  * Procedural Memory — implicit behavioral pattern learning.
  *
- * In the human brain, procedural memory is stored in the cerebellum + striatum.
+
  * It captures "how" rather than "what": skills, habits, preferences that are
  * learned through repetition rather than explicit declaration.
  *

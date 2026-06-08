@@ -13,7 +13,7 @@
  * - Dream Cycle still runs for deeper processing (associations, graph, narrative)
  *
  * This gives us Supermemory-like real-time indexing while keeping the
- * neuroscience-inspired Dream Cycle for consolidation.
+ * Dream Cycle for consolidation.
  */
 
 import { generateObject } from "ai";

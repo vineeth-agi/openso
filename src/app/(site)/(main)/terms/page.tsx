@@ -11,7 +11,7 @@ import {
 export const metadata: Metadata = {
   title: "Terms of Service · Openso",
   description:
-    "The legal agreement between Openso and users of the open-source issue finder, AI portfolio, repo chat, and Gmail summarization service.",
+    "The legal agreement between Openso and users of the open-source issue finder, AI portfolio, and repo chat.",
   alternates: { canonical: `${getAppUrlOrLocalhost()}/terms` },
   robots: { index: true, follow: true },
 };

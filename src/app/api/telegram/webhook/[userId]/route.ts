@@ -8,7 +8,7 @@
  *  - Long message splitting at paragraph boundaries (Telegram 4096 char limit)
  *  - HTML → plain-text fallback (Telegram rejects bad entities silently)
  *  - Typing indicator loop (refreshed every 4s while AI is working)
- *  - All connected apps: Gmail, GitHub
+ *  - All connected apps: GitHub
  *  - Memory context + memory tools (rememberFact, recallMemory, getUserProfile)
  *  - Daytona sandbox for code execution
  *  - Multi-step tool calls (up to 10 steps)
@@ -328,14 +328,6 @@ async function transcribeVoice(_buffer: Buffer, _mimeType: string): Promise<stri
 
 /** Human-readable tool progress labels */
 const TOOL_PROGRESS_LABELS: Record<string, string> = {
-  // Gmail
-  gmail_search_messages: "📧 Searching emails...",
-  gmail_read_message: "📧 Reading email...",
-  gmail_send_message: "📧 Sending email...",
-  gmail_reply_message: "📧 Replying to email...",
-  gmail_trash_message: "📧 Moving to trash...",
-  gmail_forward_message: "📧 Forwarding email...",
-  gmail_download_attachment: "📧 Downloading attachment...",
   // GitHub
   github_list_repos: "💻 Listing repositories...",
   github_list_issues: "💻 Checking issues...",
@@ -358,9 +350,6 @@ const TOOL_PROGRESS_LABELS: Record<string, string> = {
   recallMemory: "🧠 Recalling...",
   getUserProfile: "🧠 Loading profile...",
   forgetFact: "🧠 Forgetting...",
-  setReminder: "⏰ Setting reminder...",
-  scheduleRecurringTask: "🔄 Scheduling task...",
-  listScheduledTasks: "📋 Listing tasks...",
   // Code & sandbox
   runCode: "⚙️ Running code...",
   create_sandbox: "🖥️ Creating sandbox...",
@@ -435,8 +424,6 @@ TELEGRAM FORMATTING RULES (critical — Telegram HTML only, no markdown):
 - Keep replies concise — this is a chat interface
 
 CRITICAL BEHAVIOR RULES:
-- When a user asks about emails (ANY wording: "emails", "mails", "inbox", "unread", "unreadmails", etc.),
-  IMMEDIATELY call gmail_search_messages. Do NOT ask what kind of emails. Just do it.
 - When a user asks about GitHub, IMMEDIATELY call github_list_repos or the appropriate tool.
 - NEVER ask for clarification before using a tool — just use the most reasonable interpretation.
 - After getting tool results, ALWAYS write a clear text response summarizing what you found.
@@ -614,7 +601,7 @@ async function processMessage(
     await db.database.from("profiles").update({ telegram_chat_id: chatId }).eq("id", userId);
     await sendMessage(
       token, chatId,
-      `✅ <b>Connected!</b>\n\nHey <b>${profile.full_name ?? fromName}</b>! I'm Jarvis — your AI assistant.\n\nI have access to all your connected apps (Gmail, GitHub, and more). Just ask me anything!\n\nTry: "Check my emails" or "List my GitHub repos"`,
+      `✅ <b>Connected!</b>\n\nHey <b>${profile.full_name ?? fromName}</b>! I'm Jarvis — your AI assistant.\n\nI have access to all your connected apps (GitHub, and more). Just ask me anything!\n\nTry: "List my GitHub repos"`,
     );
     return;
   }
@@ -634,7 +621,7 @@ async function processMessage(
   if (text === "/help") {
     await sendMessage(
       token, chatId,
-      `<b>Jarvis — What I can do:</b>\n\n📧 Read &amp; send Gmail\n💻 Manage GitHub repos, issues, PRs, reviews\n🧠 Remember things about you\n🔬 Deep research any topic\n🌐 Search the web\n💻 Run code in a sandbox\n🎙️ Send voice messages — I'll transcribe &amp; respond\n📷 Send photos — I can analyze them\n\n<b>Commands:</b>\n/new — Start a new conversation\n/status — Show connected apps\n/help — Show this message`,
+      `<b>Jarvis — What I can do:</b>\n\n💻 Manage GitHub repos, issues, PRs, reviews\n🧠 Remember things about you\n🔬 Deep research any topic\n🌐 Search the web\n💻 Run code in a sandbox\n🎙️ Send voice messages — I'll transcribe &amp; respond\n📷 Send photos — I can analyze them\n\n<b>Commands:</b>\n/new — Start a new conversation\n/status — Show connected apps\n/help — Show this message`,
     );
     return;
   }
@@ -815,18 +802,7 @@ async function processMessage(
       }
     }
 
-    // Ensure job-board search tool is ALWAYS available when needed — uses
-    // Voyage embeddings + InsForge RPC, no third-party auth.
-    if (intent.needsJobBoardSearch && !nativeAppTools['search_job_board_jobs']) {
-      try {
-        const { buildJobBoardTools } = await import("@/lib/tools/native-tools/job-board");
-        const jobBoardTools = buildJobBoardTools(userId);
-        nativeAppTools['search_job_board_jobs'] = jobBoardTools['search_job_board_jobs'];
-        console.log('[tg/webhook] Loaded job-board search tool');
-      } catch (e) {
-        console.warn('[tg/webhook] Failed to load job-board tool:', e);
-      }
-    }
+
 
     const profileTools = buildProfileTools(userId);
     const allTools = {

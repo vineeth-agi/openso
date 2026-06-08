@@ -73,6 +73,18 @@ export function Footer() {
 							Buddhsen Tripathi
 						</a>
 					</p>
+					<span className="hidden sm:inline text-muted-foreground/30">•</span>
+					<p>
+						LLM credits by{" "}
+						<a
+							className="text-foreground/80 hover:text-foreground hover:underline font-medium"
+							href="https://x.com/adxtyahq"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Aditya
+						</a>
+					</p>
 				</div>
 
 				<p className="inline-flex items-center gap-1">

@@ -45,18 +45,12 @@ export function HeroSection() {
 				</h1>
 
 				<p className="fade-in slide-in-from-bottom-10 mx-auto max-w-2xl animate-in fill-mode-backwards text-center text-base text-foreground/80 tracking-wider delay-200 duration-500 ease-out sm:text-lg md:text-xl">
-					Find perfect-fit open source issues, get matched with top tech jobs, and build stunning developer portfolios with automated AI workflows.
+					Find perfect-fit open source issues and build stunning developer portfolios with automated AI workflows.
 				</p>
 
 				<div className="fade-in slide-in-from-bottom-10 flex animate-in flex-row flex-wrap items-center justify-center gap-3 fill-mode-backwards pt-2 delay-300 duration-500 ease-out">
 					<Button className="rounded-full" size="lg" variant="secondary" asChild>
 						<Link href="/open-source-issues">Search Issues</Link>
-					</Button>
-					<Button className="rounded-full" size="lg" asChild>
-						<Link href="/jobs">
-							Find Jobs{" "}
-							<ArrowRight className="ml-2 size-4" />
-						</Link>
 					</Button>
 				</div>
 			</div>

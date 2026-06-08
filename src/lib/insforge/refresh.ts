@@ -43,8 +43,8 @@ export interface RefreshedSession {
 export async function exchangeRefreshToken(
   refreshToken: string,
 ): Promise<RefreshedSession | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_INSFORGE_BASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY;
+  const baseUrl = process.env.INSFORGE_BASE_URL;
+  const anonKey = process.env.INSFORGE_ANON_KEY;
   if (!baseUrl || !anonKey || !refreshToken) return null;
 
   const url = `${baseUrl.replace(/\/$/, "")}/api/auth/refresh?client_type=mobile`;

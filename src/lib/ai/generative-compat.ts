@@ -1,19 +1,19 @@
 /**
- * Legacy `GoogleGenerativeAI` compatibility shim — now backed by Pioneer AI.
+ * Legacy `GoogleGenerativeAI` compatibility shim — now backed by xAI.
  *
  * Preserves the legacy API surface used by older routes (github-analyze,
  * pioneer-compat-helper) so callers keep working without code changes:
  *
  * ```ts
  * const genAI = new GoogleGenerativeAI();
- * const model = genAI.getGenerativeModel({ model: "deepseek-ai/DeepSeek-V4-Flash" });
+ * const model = genAI.getGenerativeModel({ model: "grok-4.20-0309-non-reasoning" });
  * const result = await model.generateContent("prompt or content array");
  * const text = result.response.text();
  * ```
  *
- * Internally delegates to Vercel AI SDK `generateText` against our Pioneer AI
- * provider (OpenAI-compatible, DeepSeek V4 Flash). The optional `apiKey`
- * constructor argument is accepted but ignored (Pioneer uses its own key).
+ * Internally delegates to Vercel AI SDK `generateText` against our xAI
+ * provider (OpenAI-compatible, Grok). The optional `apiKey`
+ * constructor argument is accepted but ignored (xAI uses its own key).
  */
 
 import { generateText } from "ai";
@@ -122,7 +122,7 @@ class GenerativeModelCompat {
       topP: cfg.topP,
       topK: cfg.topK,
       stopSequences: cfg.stopSequences,
-      providerOptions: undefined, // Pioneer (OpenAI-compatible) doesn't use providerOptions
+      providerOptions: undefined, // xAI (OpenAI-compatible) doesn't use providerOptions
     });
 
     const text = result.text ?? "";
@@ -131,7 +131,7 @@ class GenerativeModelCompat {
 }
 
 export class GoogleGenerativeAI {
-  // apiKey is accepted for backwards compatibility but ignored — Pioneer AI
+  // apiKey is accepted for backwards compatibility but ignored — xAI
   // uses its own API key from the environment.
   constructor(_apiKey?: string) {}
 

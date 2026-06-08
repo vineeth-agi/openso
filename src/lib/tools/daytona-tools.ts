@@ -50,12 +50,24 @@ export function buildDaytonaTools(userId: string) {
             console.warn("[daytona] Could not fetch GitHub token:", e);
           }
 
+          const envVars: Record<string, string> = {};
+          if (githubToken) {
+            envVars.GITHUB_TOKEN = githubToken;
+            envVars.GH_TOKEN = githubToken;
+          }
+          if (process.env.XAI_API_KEY) {
+            envVars.XAI_API_KEY = process.env.XAI_API_KEY;
+          }
+          if (process.env.FIRECRAWL_API_KEY) {
+            envVars.FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
+          }
+          if (process.env.VOYAGE_API_KEY) {
+            envVars.VOYAGE_API_KEY = process.env.VOYAGE_API_KEY;
+          }
+
           const sandbox = await daytona.create({ 
             language,
-            envVars: githubToken ? { 
-              GITHUB_TOKEN: githubToken,
-              GH_TOKEN: githubToken,
-            } : {},
+            envVars,
             // Tag the sandbox with the owning user so /api/repo-agent/delete
             // can verify ownership before destroying it (Finding 3).
             labels: { userId, source: "chat-create-sandbox" },
@@ -85,13 +97,27 @@ export function buildDaytonaTools(userId: string) {
               console.warn("[daytona] GitHub setup partial failure (non-blocking):", e);
             }
           }
+
+          // 3. Proactively install developer utilities (ripgrep, cloc, fd-find, ast-grep)
+          try {
+            await sandbox.process.executeCommand(
+              `apt-get update -qq && apt-get install -y -qq ripgrep cloc fd-find && ` +
+              `([ -f /usr/bin/fdfind ] && ln -sf /usr/bin/fdfind /usr/local/bin/fd || true)`
+            );
+            await sandbox.process.executeCommand(
+              `(which npm > /dev/null 2>&1) && npm install -g @ast-grep/cli || true`
+            );
+            console.log("[daytona] Developer utilities (ripgrep, cloc, fd, ast-grep) pre-installed in sandbox", sandbox.id);
+          } catch (e) {
+            console.warn("[daytona] Developer tools setup partial failure (non-blocking):", e);
+          }
           
           return { 
             status: "success", 
             sandboxId: sandbox.id,
             workspaceUrl: (sandbox as unknown as { url?: string }).url,
             githubReady: !!githubToken,
-            message: `Sandbox created with ID ${sandbox.id}. ${githubToken ? "GitHub CLI (gh) installed and authenticated. git push configured with token auth." : "No GitHub token found."} Use execute_command, write_file, or code_run tools.` 
+            message: `Sandbox created with ID ${sandbox.id}. ${githubToken ? "GitHub CLI (gh) installed and authenticated. git push configured with token auth." : "No GitHub token found."} Pre-installed utilities: ripgrep (rg), cloc, fd-find (fd), and ast-grep (sg). The sandbox has access to: XAI_API_KEY, FIRECRAWL_API_KEY, and GITHUB_TOKEN environment variables. You can run scripts inside the sandbox that make calls to these APIs.` 
           };
         } catch (error) {
           console.error("[daytona] create_sandbox error:", error);
@@ -226,7 +252,7 @@ export function buildDaytonaTools(userId: string) {
 
     search_files: tool({
       description:
-        "Search for a text pattern inside files in the sandbox using `grep -rn`. Use this to find where a symbol, error message, or concept is used in the codebase. Returns matching file:line:text entries.",
+        "Search for a text pattern inside files in the sandbox using `ripgrep` (or standard `grep` as fallback). Use this to find where a symbol, error message, or concept is used in the codebase. Returns matching file:line:text entries.",
       inputSchema: z.object({
         sandboxId: z.string(),
         pattern: z.string().describe("Text or regex pattern to search for"),
@@ -242,13 +268,16 @@ export function buildDaytonaTools(userId: string) {
 
           const safePath = path.replace(/["`$\\]/g, "");
           const include = filePattern ? ` --include=${JSON.stringify(filePattern)}` : "";
-          // Fixed-string mode (-F) is safer than regex; caller asks for literal text more often than regex
-          const cmd = `grep -rnI -F${include} --exclude-dir=node_modules --exclude-dir=.git ` +
+          // If ripgrep (rg) is available, use it. Otherwise, fallback to grep.
+          const cmd = `(which rg > /dev/null 2>&1) && ` +
+            `rg -n --column --no-heading --fixed-strings ${filePattern ? `-g ${JSON.stringify(filePattern)}` : ""} ` +
+            `--glob '!node_modules/*' --glob '!.git/*' --glob '!dist/*' --glob '!build/*' --glob '!.next/*' --glob '!__pycache__/*' ` +
+            `${JSON.stringify(pattern)} ${JSON.stringify(safePath)} | head -${maxResults} || ` +
+            `grep -rnI -F${include} --exclude-dir=node_modules --exclude-dir=.git ` +
             `--exclude-dir=dist --exclude-dir=build --exclude-dir=.next --exclude-dir=__pycache__ ` +
             `${JSON.stringify(pattern)} ${JSON.stringify(safePath)} | head -${maxResults}`;
           const response = await sandbox.process.executeCommand(cmd);
           const output = (response.result || "").trim();
-          // grep exits 1 when no match — not an error for us
           return {
             status: "success",
             exitCode: response.exitCode,

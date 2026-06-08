@@ -22,8 +22,8 @@ export async function startOAuth(
   redirectTo: string,
 ): Promise<{ url: string } | { error: string }> {
   const client = createInsforgeClient({
-    baseUrl: process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
-    anonKey: process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!,
+    baseUrl: process.env.INSFORGE_BASE_URL!,
+    anonKey: process.env.INSFORGE_ANON_KEY!,
     isServerMode: true,
   } as Parameters<typeof createInsforgeClient>[0]);
 

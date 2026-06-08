@@ -117,39 +117,6 @@ type ChatModelId = (typeof CHAT_MODEL_OPTIONS)[number]["value"];
 // Tool Result Components
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Resume Download Card
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface DownloadButtonProps {
-  label: string;
-  format: "pdf" | "docx";
-  type: "resume" | "cover_letter";
-  payload: Record<string, unknown>;
-  filename: string;
-}
-
-// TODO: Implement /api/job-search/resume/download endpoint for PDF/DOCX generation
-function DownloadButton({ label, format }: DownloadButtonProps) {
-  const Icon = format === "pdf" ? FileDown : FileText;
-
-  return (
-    <button
-      type="button"
-      disabled
-      title="Download coming soon"
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium",
-        "border-border bg-card text-muted-foreground cursor-not-allowed opacity-50",
-      )}
-    >
-      <Icon className="h-3 w-3" />
-      {label}
-    </button>
-  );
-}
-
-
 
 function ToolError({ toolName }: { toolName: string }) {
   const meta = getToolMeta(toolName);
@@ -460,160 +427,7 @@ const PurePreviewMessage = memo(function PreviewMessage({
           );
         })}
 
-        {/* Job search results */}
-        {toolParts
-          .filter((t) => t.toolName === "searchJobs" && t.state === "output-available" && t.output)
-          .map((t, i) => {
-            const result = t.output as { jobs?: Array<{ title: string; company: string; location: string; locationType: string; salary: string; jobUrl: string; source: string; matchScore: number; matchReason: string; matchSkills: string[]; description: string }>; total?: number; message?: string };
-            const jobs = result?.jobs;
-            if (!jobs || jobs.length === 0) return null;
-            return (
-              <div key={`jobs-${message.id}-${i}`} className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">
-                  Found {result.total ?? jobs.length} jobs — showing top {jobs.length}
-                </p>
-                <div className="grid gap-2">
-                  {jobs.slice(0, 10).map((job, ji) => (
-                    <div
-                      key={`job-${ji}`}
-                      className="rounded-lg border border-border bg-card p-3 transition-colors hover:border-primary/30"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="truncate text-sm font-semibold text-foreground">{job.title}</h4>
-                            {job.matchScore > 0 && (
-                              <span className={cn(
-                                "shrink-0 rounded-full px-1.5 py-0.5 text-xs font-bold",
-                                job.matchScore >= 80 ? "bg-green-500/10 text-green-600" :
-                                job.matchScore >= 60 ? "bg-yellow-500/10 text-yellow-600" :
-                                "bg-muted text-muted-foreground"
-                              )}>
-                                {job.matchScore}%
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Building2 className="h-3 w-3" />
-                              {job.company}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {job.location}
-                              {job.locationType === "Remote" && (
-                                <span className="rounded bg-blue-500/10 px-1 py-px text-xs text-blue-600">Remote</span>
-                              )}
-                            </span>
-                            {job.salary && (
-                              <span className="flex items-center gap-1">
-                                <DollarSign className="h-3 w-3" />
-                                {job.salary}
-                              </span>
-                            )}
-                            <span className="capitalize text-muted-foreground/60">{job.source}</span>
-                          </div>
-                          {job.matchReason && (
-                            <p className="mt-1.5 text-xs text-muted-foreground/80">{job.matchReason}</p>
-                          )}
-                          {job.matchSkills?.length > 0 && (
-                            <div className="mt-1.5 flex flex-wrap gap-1">
-                              {job.matchSkills.slice(0, 5).map((s) => (
-                                <span key={s} className="rounded bg-primary/5 px-1.5 py-0.5 text-xs text-primary">{s}</span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        {job.jobUrl && (
-                          <a
-                            href={job.jobUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="shrink-0 rounded-md border border-border px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
-                          >
-                            <ExternalLink className="mr-1 inline h-3 w-3" />
-                            Apply
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
 
-        {/* Application package download cards */}
-        {toolParts
-          .filter((t) => t.toolName === "generateApplicationPackage" && t.state === "output-available" && t.output)
-          .map((t, i) => {
-            type AppPackageResult = {
-              targetRole?: string;
-              targetCompany?: string;
-              resume?: { downloadPayload?: Record<string, unknown>; keywordMatchRate?: number } | null;
-              coverLetter?: { text?: string; wordCount?: number; downloadPayload?: Record<string, unknown> } | null;
-            };
-            const out = t.output as AppPackageResult;
-            if (!out || (!out.resume && !out.coverLetter)) return null;
-            const role = out.targetRole ?? "role";
-            const company = out.targetCompany ?? "company";
-            const safeSlug = `${role}-${company}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
-            return (
-              <div key={`appkg-${message.id}-${i}`} className="rounded-lg border border-border bg-card p-3">
-                <div className="mb-2.5 flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded bg-primary/10">
-                    <Download className="h-3.5 w-3.5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-foreground">{role} @ {company}</p>
-                    {out.resume?.keywordMatchRate != null && (
-                      <p className="text-xs text-muted-foreground">
-                        {Math.round(out.resume.keywordMatchRate * 100)}% keyword match
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {out.resume?.downloadPayload && (
-                    <>
-                      <DownloadButton
-                        label="Resume PDF"
-                        format="pdf"
-                        type="resume"
-                        payload={out.resume.downloadPayload}
-                        filename={`resume-${safeSlug}.pdf`}
-                      />
-                      <DownloadButton
-                        label="Resume DOCX"
-                        format="docx"
-                        type="resume"
-                        payload={out.resume.downloadPayload}
-                        filename={`resume-${safeSlug}.docx`}
-                      />
-                    </>
-                  )}
-                  {out.coverLetter?.downloadPayload && (
-                    <>
-                      <DownloadButton
-                        label="Cover Letter PDF"
-                        format="pdf"
-                        type="cover_letter"
-                        payload={out.coverLetter.downloadPayload}
-                        filename={`cover-letter-${safeSlug}.pdf`}
-                      />
-                      <DownloadButton
-                        label="Cover Letter DOCX"
-                        format="docx"
-                        type="cover_letter"
-                        payload={out.coverLetter.downloadPayload}
-                        filename={`cover-letter-${safeSlug}.docx`}
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-            );
-          })}
 
         {/* Draw.io diagram results */}
         {toolParts
@@ -1264,7 +1078,7 @@ export function ChatPage({ conversationId }: { conversationId: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [inputValue, setInputValue] = useState("");
-  const [selectedModel, setSelectedModel] = useState<ChatModelId>("pioneer-default");
+  const [selectedModel, setSelectedModel] = useState<ChatModelId>("grok-4.20-0309-non-reasoning");
   const selectedModelRef = useRef<ChatModelId>(selectedModel);
   selectedModelRef.current = selectedModel;
   const conversationIdRef = useRef(conversationId);
@@ -1427,8 +1241,8 @@ export function ChatPage({ conversationId }: { conversationId: string }) {
         body: () => ({
           conversationId: conversationIdRef.current,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          model: selectedModelRef.current === "pioneer-default" ? undefined : selectedModelRef.current,
-          mode: activeSkillsRef.current.includes("Jobs Mode") ? "jobs" : "normal",
+          model: selectedModelRef.current === "grok-4.20-0309-non-reasoning" ? undefined : selectedModelRef.current,
+          mode: "normal",
 
           selectedRepo: selectedRepoRef.current ?? undefined,
           repoSandboxId: repoSandboxIdRef.current ?? undefined,

@@ -10,7 +10,7 @@ export const revalidate = 0;
 
 /**
  * GET /api/connections
- * Returns the user's active connections (Gmail, Google Calendar, GitHub).
+ * Returns the user's active connections (GitHub).
  */
 export async function GET(request: Request) {
   try {
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
 }
 
 /**
- * DELETE /api/connections?provider=gmail|google_calendar|github
+ * DELETE /api/connections?provider=github
  * Disconnects an app.
  */
 export async function DELETE(request: Request) {
@@ -67,7 +67,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Unauthorized — please refresh the page and try again" }, { status: 401 });
     }
 
-    // Support both query param (?provider=gmail) and JSON body ({ provider: "gmail" })
+    // Support both query param (?provider=github) and JSON body ({ provider: "github" })
     const url = new URL(request.url);
     let provider = url.searchParams.get("provider");
     if (!provider) {
@@ -79,7 +79,7 @@ export async function DELETE(request: Request) {
       }
     }
 
-    const validProviders = ["github", "gmail"];
+    const validProviders = ["github"];
     if (!provider || !validProviders.includes(provider)) {
       return NextResponse.json(
         { error: `provider must be one of: ${validProviders.join(", ")}` },

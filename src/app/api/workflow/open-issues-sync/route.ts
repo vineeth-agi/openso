@@ -752,13 +752,10 @@ export const { POST } = serve<OpenIssuesSyncPayload>(async (context) => {
 
   // Bust the read-through caches that the dashboard endpoints rely on.
   // We do this in its own `context.run` step so a Redis hiccup doesn't
-  // mark the whole workflow as failed (caches are best-effort), and we
-  // include the jobs:list:* prefix because new repo activity can ripple
-  // into related job-board content too.
+  // mark the whole workflow as failed (caches are best-effort).
   await context.run("bust-caches", async () => {
     try {
       await cacheDel(CACHE_KEYS.openSourceRepos, CACHE_KEYS.openSourceIssues);
-      await cacheDelByPattern(`${CACHE_KEYS.jobsListPrefix}*`);
     } catch (err) {
       console.warn("[Sync] cache invalidation failed (non-fatal):", err);
     }

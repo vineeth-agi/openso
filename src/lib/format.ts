@@ -3,9 +3,8 @@ import { formatDistanceToNow } from "date-fns";
 /**
  * Format a date string as a human-readable relative time (e.g. "5m ago", "2h ago").
  *
- * Replaces 3 duplicate implementations:
+ * Replaces 2 duplicate implementations:
  *   - memory-brain.tsx → timeAgo()
- *   - cron-jobs.tsx    → formatRelativeTime()
  *   - dashboard-shell  → formatDistanceToNow (date-fns)
  *
  * Uses date-fns under the hood for consistent output.
@@ -19,23 +18,7 @@ export function timeAgo(dateStr: string | null | undefined): string {
   }
 }
 
-/**
- * Format a relative time that also handles future dates (e.g. "in 5m").
- * Used for cron job scheduling where next_run_at can be in the future.
- */
-export function formatRelativeTime(iso: string | null): string {
-  if (!iso) return "—";
-  const diff = Date.now() - new Date(iso).getTime();
-  const abs = Math.abs(diff);
-  const future = diff < 0;
-  const mins = Math.floor(abs / 60000);
-  const hours = Math.floor(abs / 3600000);
-  const days = Math.floor(abs / 86400000);
-  if (mins < 1) return future ? "in a moment" : "just now";
-  if (hours < 1) return future ? `in ${mins}m` : `${mins}m ago`;
-  if (days < 1) return future ? `in ${hours}h` : `${hours}h ago`;
-  return future ? `in ${days}d` : `${days}d ago`;
-}
+
 
 /**
  * Compact age form intended for chips/badges, no "ago" suffix.

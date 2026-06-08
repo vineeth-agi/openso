@@ -307,7 +307,7 @@ async function extract(userId: string): Promise<DreamCycleResult | null> {
   }
 }
 
-// ── Step 2.5: Reconsolidate (brain-inspired: retrieved memories become labile) ──
+// ── Step 2.5: Reconsolidate ──
 
 async function reconsolidate(userId: string): Promise<DreamCycleResult | null> {
   const start = Date.now();

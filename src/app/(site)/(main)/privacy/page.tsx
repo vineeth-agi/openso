@@ -11,7 +11,7 @@ import {
 export const metadata: Metadata = {
   title: "Privacy Policy · Openso",
   description:
-    "How Openso collects, uses, and protects your data, including OAuth scope justifications, sub-processors, GDPR and CCPA rights, and the Google API Limited Use disclosure.",
+    "How Openso collects, uses, and protects your data, including OAuth scope justifications, sub-processors, and GDPR and CCPA rights.",
   alternates: { canonical: `${getAppUrlOrLocalhost()}/privacy` },
   robots: { index: true, follow: true },
 };

@@ -10,7 +10,7 @@ import { join } from "path";
 import { deflateRawSync } from "zlib";
 import { z } from "zod";
 
-import { google } from "@/lib/ai/google-provider";
+import { google, getDefaultPioneerModel } from "@/lib/ai/google-provider";
 import { firecrawlSearch, firecrawlScrape, firecrawlSearchWithContent, isFirecrawlConfigured } from "@/lib/firecrawl";
 
 // ── Web Search & Scrape Tools (Firecrawl-powered) ──────────────────────────
@@ -136,7 +136,7 @@ Do NOT use this for simple text answers. Pass the data and description of what t
       execute: async ({ prompt }) => {
         try {
           const openUIPrompt = getOpenUIPrompt();
-          const model = google(process.env.PIONEER_MODEL || "deepseek-ai/DeepSeek-V4-Flash");
+          const model = google(process.env.PIONEER_MODEL || getDefaultPioneerModel());
           const { text } = await generateText({
             model,
             system: openUIPrompt,
@@ -174,7 +174,7 @@ export function buildDeepResearchTool() {
       inputSchema: z.object({ idea: z.string().describe("The startup idea or business concept to research") }),
       execute: async ({ idea }) => {
         try {
-          const pioneerModel = google(process.env.PIONEER_MODEL || "deepseek-ai/DeepSeek-V4-Flash");
+          const pioneerModel = google(process.env.PIONEER_MODEL || getDefaultPioneerModel());
           const [scoutResults, librarianResults, pessimistResults] = await Promise.all([
             firecrawlSearchWithContent(`site:reddit.com "${idea}" OR "pain point" OR "alternative to"`, 15, "qdr:y"),
             firecrawlSearchWithContent(`"${idea}" market size growth report 2025 2026`, 15),

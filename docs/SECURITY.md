@@ -18,11 +18,11 @@ Everything else is **server-only** and must never reach the client.
 | Env var | Purpose | Scope |
 | --- | --- | --- |
 | `NEXT_PUBLIC_APP_URL` | Canonical app origin | Public |
-| `NEXT_PUBLIC_INSFORGE_BASE_URL` | InsForge backend base URL | Public |
-| `NEXT_PUBLIC_INSFORGE_ANON_KEY` | InsForge client SDK anon key | Public |
+| `INSFORGE_BASE_URL` | InsForge backend base URL | Server-only |
+| `INSFORGE_ANON_KEY` | InsForge client SDK anon key | Server-only |
 | `INSFORGE_API_KEY` | InsForge admin API key | Server-only |
 | `INSFORGE_DB_URL` | Direct Postgres connection (incl. DB password) | Server-only |
-| `PIONEER_API_KEY` | Pioneer AI API key (DeepSeek models) | Server-only |
+| `XAI_API_KEY` | xAI Grok API key | Server-only |
 | `VOYAGE_API_KEY` | Voyage embeddings API key | Server-only |
 | `GITHUB_CLIENT_ID` | GitHub OAuth client id | Server-only |
 | `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret | Server-only |
@@ -31,8 +31,6 @@ Everything else is **server-only** and must never reach the client.
 | `NEXT_PUBLIC_GITHUB_APP_URL` | GitHub App install URL | Public |
 | `GITHUB_WEBHOOK_SECRET` | GitHub webhook HMAC secret | Server-only |
 | `GITHUB_TOKEN` | GitHub PAT (server fallback) | Server-only |
-| `GOOGLE_CLIENT_ID` | Google OAuth client id | Server-only |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | Server-only |
 | `QSTASH_TOKEN` | QStash publish token | Server-only |
 | `QSTASH_CURRENT_SIGNING_KEY` | QStash signature verification key | Server-only |
 | `QSTASH_NEXT_SIGNING_KEY` | QStash next signing key (rotation) | Server-only |
@@ -66,7 +64,7 @@ Everything else is **server-only** and must never reach the client.
 
 | Credential | Rotate at |
 | --- | --- |
-| Pioneer AI key (`PIONEER_API_KEY`) | Pioneer AI dashboard |
+| xAI Grok key (`XAI_API_KEY`) | xAI dashboard |
 | GitHub PAT (`GITHUB_TOKEN`) | GitHub → Developer settings → Tokens |
 | GitHub App private key | GitHub App settings → Private keys |
 | GitHub OAuth client secret | GitHub OAuth App settings |

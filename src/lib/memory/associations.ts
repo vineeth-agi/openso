@@ -1,9 +1,5 @@
 /**
- * Associative Memory Chains — Pattern Completion (CA3 hippocampal function).
- *
- * In the human brain, retrieving one memory activates associated memories
- * via spreading activation. The CA3 region of the hippocampus does "pattern
- * completion": a partial cue triggers recall of the full stored pattern.
+ * Associative Memory Chains — Pattern Completion.
  *
  * Implementation:
  * - Facts are linked via memory_associations (typed, weighted edges)

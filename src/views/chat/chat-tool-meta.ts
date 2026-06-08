@@ -44,76 +44,7 @@ export type ToolMeta = { icon: ElementType; label: string; activeLabel: string }
 
 export const TOOL_META: Record<string, ToolMeta> = {
 
-  inboxRag: {
-    icon: Search,
-    label: "Searched emails",
-    activeLabel: "Searching emails...",
-  },
-  buildGmailSearchQuery: {
-    icon: Search,
-    label: "Built search query",
-    activeLabel: "Building search query...",
-  },
-  getThread: {
-    icon: Mail,
-    label: "Fetched thread",
-    activeLabel: "Fetching thread...",
-  },
-  getThreadSummary: {
-    icon: Mail,
-    label: "Summarized thread",
-    activeLabel: "Summarizing thread...",
-  },
-  sendEmail: {
-    icon: Mail,
-    label: "Sent email",
-    activeLabel: "Sending email...",
-  },
-  composeEmail: {
-    icon: FileEdit,
-    label: "Composed draft",
-    activeLabel: "Composing draft...",
-  },
-  bulkArchive: {
-    icon: Archive,
-    label: "Archived threads",
-    activeLabel: "Archiving threads...",
-  },
-  bulkDelete: {
-    icon: Trash2,
-    label: "Deleted threads",
-    activeLabel: "Deleting threads...",
-  },
-  markThreadsRead: {
-    icon: MailOpen,
-    label: "Marked as read",
-    activeLabel: "Marking as read...",
-  },
-  markThreadsUnread: {
-    icon: MailOpen,
-    label: "Marked as unread",
-    activeLabel: "Marking as unread...",
-  },
-  modifyLabels: {
-    icon: Tag,
-    label: "Modified labels",
-    activeLabel: "Modifying labels...",
-  },
-  getUserLabels: {
-    icon: Tag,
-    label: "Fetched labels",
-    activeLabel: "Fetching labels...",
-  },
-  createLabel: {
-    icon: Tag,
-    label: "Created label",
-    activeLabel: "Creating label...",
-  },
-  deleteLabel: {
-    icon: Tag,
-    label: "Deleted label",
-    activeLabel: "Deleting label...",
-  },
+
   getCurrentDate: {
     icon: Clock,
     label: "Got current date",
@@ -124,26 +55,7 @@ export const TOOL_META: Record<string, ToolMeta> = {
     label: "Searched the web",
     activeLabel: "Searching the web...",
   },
-  searchJobs: {
-    icon: Briefcase,
-    label: "Found jobs",
-    activeLabel: "Searching jobs & reading full descriptions...",
-  },
-  evaluateJob: {
-    icon: Briefcase,
-    label: "Evaluated job",
-    activeLabel: "Running 3-layer evaluation (archetype + match + gaps + ghost)...",
-  },
-  generateApplicationPackage: {
-    icon: Briefcase,
-    label: "Generated application package",
-    activeLabel: "Tailoring resume, cover letter, and outreach...",
-  },
-  trackJobApplication: {
-    icon: Briefcase,
-    label: "Updated application status",
-    activeLabel: "Saving application outcome...",
-  },
+
   // GitHub MCP tools
   get_me: {
     icon: Github,
@@ -595,8 +507,8 @@ export function getToolMeta(name: string) {
 
 export const CHAT_MODEL_OPTIONS = [
   {
-    value: "pioneer-default",
-    label: "DeepSeek V4 Flash",
-    description: "Pioneer AI — 284B MoE, 1M context",
+    value: "grok-4.20-0309-non-reasoning",
+    label: "Grok 4.20",
+    description: "xAI — Fast, OpenAI-compatible Grok model",
   },
 ] as const;

@@ -15,7 +15,7 @@ import { randomBytes } from "node:crypto";
 
 import { createAdminClient } from "@/lib/insforge/admin";
 
-export type OAuthProvider = "github" | "google" | "gmail";
+export type OAuthProvider = "github";
 
 /** Generate a cryptographic nonce, persist it, and return the value. */
 export async function issueOAuthState(
