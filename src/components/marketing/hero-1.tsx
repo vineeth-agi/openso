@@ -15,7 +15,7 @@ export function HeroSection() {
 				
 				<div className="flex flex-col sm:flex-row items-center gap-3 z-10">
 					<a
-						href="https://insforge.dev"
+						href="https://insforge.dev?ref=openso.dev&utm_source=openso.dev&utm_medium=referral&utm_campaign=sponsorship_logo"
 						target="_blank"
 						rel="noopener noreferrer"
 						className={cn(

@@ -21,9 +21,14 @@ export async function startOAuth(
   provider: "google",
   redirectTo: string,
 ): Promise<{ url: string } | { error: string }> {
+  if (!process.env.INSFORGE_BASE_URL || !process.env.INSFORGE_ANON_KEY) {
+    console.error("[startOAuth] Missing InsForge environment variables (INSFORGE_BASE_URL or INSFORGE_ANON_KEY).");
+    return { error: "Server configuration error: Missing database credentials. Please check Vercel environment variables." };
+  }
+
   const client = createInsforgeClient({
-    baseUrl: process.env.INSFORGE_BASE_URL!,
-    anonKey: process.env.INSFORGE_ANON_KEY!,
+    baseUrl: process.env.INSFORGE_BASE_URL,
+    anonKey: process.env.INSFORGE_ANON_KEY,
     isServerMode: true,
   } as Parameters<typeof createInsforgeClient>[0]);
 
