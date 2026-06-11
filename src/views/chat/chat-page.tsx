@@ -942,7 +942,7 @@ function ChatInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={selectedRepo ? `Ask about ${selectedRepo.split("/")[1] || selectedRepo}` : "Ask anything — emails, GitHub repos, issues, code docs..."}
+        placeholder={selectedRepo ? `Ask about ${selectedRepo.split("/")[1] || selectedRepo}` : "Search open source issues — find good first issues, bugs, features..."}
         rows={1}
         className={cn(
           "block w-full resize-none bg-transparent px-4 pb-11 pt-3 text-base sm:text-sm sm:pt-3.5 text-foreground",

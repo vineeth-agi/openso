@@ -23,13 +23,13 @@ const SUGGESTIONS = [
     icon: Code,
   },
   {
-    label: "Search the web",
-    prompt: "Search the web for Next.js 15 features",
-    icon: Globe,
+    label: "Rust unassigned",
+    prompt: "Find unassigned Rust issues",
+    icon: Search,
   },
   {
-    label: "My GitHub profile",
-    prompt: "Show my connected GitHub profile facts",
+    label: "Go docs issues",
+    prompt: "Search for Go documentation issues to help with",
     icon: FolderGit2,
   },
 ];
@@ -45,7 +45,7 @@ function EmptyState({ onSend }: { onSend: (prompt: string) => void }) {
         How can I help you today?
       </h2>
       <p className="mt-1.5 max-w-sm text-center text-[13px] leading-relaxed text-muted-foreground">
-        Find open-source issues to contribute to, browse repos, or search the web.
+        Find open-source issues to contribute to across TypeScript, Python, Rust, Go, and more.
       </p>
 
       <div className="mt-6 grid w-full max-w-lg grid-cols-2 gap-2">
